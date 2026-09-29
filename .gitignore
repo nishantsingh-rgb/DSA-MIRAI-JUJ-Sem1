@@ -1,0 +1,8 @@
+# Compiled binaries / scratch test files
+a.out
+file
+file.bin
+file.cpp
+
+# Competitive Programming Helper cache
+.cph/
