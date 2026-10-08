@@ -45,9 +45,11 @@ jobs:
         run: npm run build
 
       # Publishes visualizer/dist to the gh-pages branch, which GitHub Pages serves.
+      # clean: false keeps files from earlier deploys, so a browser that still has
+      # an older cached page (GitHub caches it for 10 min) never hits a missing file.
       - name: Publish to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: visualizer/dist
-          clean: true
+          clean: false
