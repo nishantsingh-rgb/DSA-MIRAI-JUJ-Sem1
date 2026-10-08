@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>DryRun — watch C++ code think, step by step</title>
+    <meta name="description" content="An animated, step-by-step visualizer for every C++ program in the course: watch variables change, decisions branch and loops build patterns — explained in plain English." />
+    <meta name="theme-color" content="#0b0e14" />
+    <meta property="og:title" content="DryRun — watch C++ code think" />
+    <meta property="og:description" content="Every course program, replayed line by line with animations and plain-English explanations." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script>
+      // apply the saved theme before first paint (no flash)
+      try {
+        var t = JSON.parse(localStorage.getItem('dryrun:theme'));
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>DryRun needs JavaScript to animate the programs.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

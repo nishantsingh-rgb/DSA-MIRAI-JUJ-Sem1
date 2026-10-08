@@ -1,0 +1,172 @@
+/* =========================================================================
+   DryRun design tokens — see design.md for the reasoning behind each choice.
+   Dark is the default ("night lab"); light is "paper notebook".
+   ========================================================================= */
+
+:root {
+  /* type */
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: clamp(1.6rem, 1.2rem + 1.6vw, 2.2rem);
+  --fs-hero: clamp(2.4rem, 1.4rem + 4.4vw, 4.6rem);
+
+  /* spacing (4px grid) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+  --gutter: clamp(16px, 3vw, 32px);
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 140ms;
+  --dur: 260ms;
+  --dur-slow: 520ms;
+
+  --maxw: 1240px;
+
+  color-scheme: dark;
+
+  /* ---------- dark palette (default) ---------- */
+  --bg: #0b0e14;
+  --bg-elev: #11151e;
+  --surface: #151a25;
+  --surface-2: #1b2130;
+  --surface-3: #232a3b;
+  --border: #262e40;
+  --border-strong: #36405a;
+  --text: #e8ecf4;
+  --text-2: #a9b2c6;
+  --text-3: #6f7a92;
+
+  --accent: #ffd166;            /* highlighter yellow — "this is happening now" */
+  --accent-ink: #1a1405;
+  --accent-soft: rgba(255, 209, 102, 0.14);
+  --accent-line: rgba(255, 209, 102, 0.55);
+
+  --yes: #3ddc97;               /* true / taken branch */
+  --yes-soft: rgba(61, 220, 151, 0.14);
+  --no: #ff6b7a;                /* false / skipped branch, errors */
+  --no-soft: rgba(255, 107, 122, 0.14);
+  --loop: #a78bfa;              /* loops */
+  --loop-soft: rgba(167, 139, 250, 0.16);
+  --info: #5cc8ff;              /* reads, input */
+  --info-soft: rgba(92, 200, 255, 0.14);
+
+  /* syntax */
+  --syn-kw: #c792ea;
+  --syn-type: #5cc8ff;
+  --syn-str: #c3e88d;
+  --syn-num: #f78c6c;
+  --syn-com: #5f6b85;
+  --syn-fn: #82aaff;
+  --syn-op: #89ddff;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.7);
+  --glow: 0 0 0 1px var(--accent-line), 0 0 24px -4px rgba(255, 209, 102, 0.45);
+
+  --grid-dot: rgba(255, 255, 255, 0.045);
+}
+
+/* ---------- light palette ---------- */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f5f0;
+  --bg-elev: #fbfaf7;
+  --surface: #ffffff;
+  --surface-2: #f3f1ec;
+  --surface-3: #e9e6df;
+  --border: #e3dfd6;
+  --border-strong: #cfc9bc;
+  --text: #191b22;
+  --text-2: #4b5163;
+  --text-3: #858b9b;
+
+  --accent: #f2b705;
+  --accent-ink: #1a1405;
+  --accent-soft: rgba(242, 183, 5, 0.18);
+  --accent-line: rgba(214, 160, 0, 0.6);
+
+  --yes: #12a36b;
+  --yes-soft: rgba(18, 163, 107, 0.12);
+  --no: #e0364f;
+  --no-soft: rgba(224, 54, 79, 0.1);
+  --loop: #7c5cf0;
+  --loop-soft: rgba(124, 92, 240, 0.12);
+  --info: #0b86c9;
+  --info-soft: rgba(11, 134, 201, 0.1);
+
+  --syn-kw: #8a3fd1;
+  --syn-type: #0a6fb0;
+  --syn-str: #2f7d32;
+  --syn-num: #c2510f;
+  --syn-com: #9aa0ad;
+  --syn-fn: #3456c8;
+  --syn-op: #0b7a8f;
+
+  --shadow-sm: 0 1px 2px rgba(30, 25, 10, 0.08);
+  --shadow: 0 10px 30px -12px rgba(30, 25, 10, 0.22), 0 2px 6px rgba(30, 25, 10, 0.06);
+  --shadow-lg: 0 30px 70px -28px rgba(30, 25, 10, 0.35);
+  --glow: 0 0 0 1px var(--accent-line), 0 0 22px -6px rgba(242, 183, 5, 0.55);
+  --grid-dot: rgba(0, 0, 0, 0.05);
+}
+
+/* Follow the OS when the user hasn't chosen. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']):not([data-theme='light']) {
+    color-scheme: light;
+    --bg: #f7f5f0;
+    --bg-elev: #fbfaf7;
+    --surface: #ffffff;
+    --surface-2: #f3f1ec;
+    --surface-3: #e9e6df;
+    --border: #e3dfd6;
+    --border-strong: #cfc9bc;
+    --text: #191b22;
+    --text-2: #4b5163;
+    --text-3: #858b9b;
+    --accent: #f2b705;
+    --accent-soft: rgba(242, 183, 5, 0.18);
+    --accent-line: rgba(214, 160, 0, 0.6);
+    --yes: #12a36b;
+    --yes-soft: rgba(18, 163, 107, 0.12);
+    --no: #e0364f;
+    --no-soft: rgba(224, 54, 79, 0.1);
+    --loop: #7c5cf0;
+    --loop-soft: rgba(124, 92, 240, 0.12);
+    --info: #0b86c9;
+    --info-soft: rgba(11, 134, 201, 0.1);
+    --syn-kw: #8a3fd1;
+    --syn-type: #0a6fb0;
+    --syn-str: #2f7d32;
+    --syn-num: #c2510f;
+    --syn-com: #9aa0ad;
+    --syn-fn: #3456c8;
+    --syn-op: #0b7a8f;
+    --shadow-sm: 0 1px 2px rgba(30, 25, 10, 0.08);
+    --shadow: 0 10px 30px -12px rgba(30, 25, 10, 0.22), 0 2px 6px rgba(30, 25, 10, 0.06);
+    --shadow-lg: 0 30px 70px -28px rgba(30, 25, 10, 0.35);
+    --glow: 0 0 0 1px var(--accent-line), 0 0 22px -6px rgba(242, 183, 5, 0.55);
+    --grid-dot: rgba(0, 0, 0, 0.05);
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.cache/
+src/generated/
+*.log
+.DS_Store
+public/notes/

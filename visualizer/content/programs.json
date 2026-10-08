@@ -1,0 +1,473 @@
+{
+  "01_Getting_Started_with_Cpp/L1_Class_1_Print_Hello_World": {
+    "title": "Print Hello, World",
+    "summary": "Shows the greeting Hello, World! on the screen.",
+    "analogy": "It is like a newborn's first word: the simplest possible proof that the computer can hear you and speak back.",
+    "watchFor": "Watch the single line of text appear in the output the moment the print step runs."
+  },
+  "01_Getting_Started_with_Cpp/L1_Class_2_Print_your_name_class_and_roll_on_separa": {
+    "title": "Print your name, class and roll on separate lines",
+    "summary": "Prints a student's name, class and roll number, each on its own line.",
+    "analogy": "Think of filling in the three lines of a school ID card, one line at a time from top to bottom.",
+    "watchFor": "Notice how each endl pushes the next piece of text onto a fresh line."
+  },
+  "01_Getting_Started_with_Cpp/L1_Class_3_Print_a_small_ASCII_box": {
+    "title": "Print a small ASCII box",
+    "summary": "Draws a small rectangle on the screen using plus signs, dashes and bars.",
+    "analogy": "It is like drawing a box on graph paper line by line: a top edge, two sides, then a bottom edge.",
+    "watchFor": "Watch the box take shape as the four lines stack up one under another."
+  },
+  "01_Getting_Started_with_Cpp/L1_HW_1_Print_your_daily_timetable_as_text": {
+    "title": "Print your daily timetable",
+    "summary": "Prints a simple school timetable with times and subjects.",
+    "analogy": "It is like copying your class timetable onto the first page of a new notebook, one period per line.",
+    "watchFor": "Notice that the computer prints the lines in exactly the order they are written, top to bottom."
+  },
+  "01_Getting_Started_with_Cpp/L1_HW_2_Print_a_4_line_ASCII_figure": {
+    "title": "Print a 4-line ASCII figure",
+    "summary": "Draws a little house-like shape with slashes, underscores and bars.",
+    "analogy": "It is like making a picture with matchsticks on a table: each line of text adds another layer of sticks.",
+    "watchFor": "Watch how the double backslash in the code shows up as a single backslash on screen."
+  },
+  "01_Getting_Started_with_Cpp/L2_Class_1_Declare_and_print_a_variable_of_each_typ": {
+    "title": "A variable of each type",
+    "summary": "Stores an age, a population, the value of pi, a grade letter, a yes/no answer and a name, then prints them all.",
+    "analogy": "Variables are like labelled kitchen containers: a small jar for salt, a big drum for rice, each sized for what it holds.",
+    "watchFor": "Notice how each box gets filled with its value first, and how the true value prints as 1."
+  },
+  "01_Getting_Started_with_Cpp/L2_Class_2_Area_and_perimeter_of_a_rectangle": {
+    "title": "Area and perimeter of a rectangle",
+    "summary": "Works out how much space a rectangle covers and how long its border is.",
+    "analogy": "Area is how many tiles you need to cover a floor, and perimeter is how much ribbon you need to go around its edge.",
+    "watchFor": "Watch area and perimeter get calculated from length and breadth before anything is printed."
+  },
+  "01_Getting_Started_with_Cpp/L2_Class_3_Swap_two_numbers_using_a_third_variable": {
+    "title": "Swap two numbers using a third variable",
+    "summary": "Exchanges the values of two numbers with the help of a spare box.",
+    "analogy": "To swap the drinks in two full glasses, you first pour one into an empty third glass so nothing spills.",
+    "watchFor": "Follow the three moves: a goes into temp, b goes into a, then temp goes into b."
+  },
+  "01_Getting_Started_with_Cpp/L2_HW_1_Print_sizeof_of_each_type": {
+    "title": "Size of each data type",
+    "summary": "Shows how many bytes of memory each kind of value takes up.",
+    "analogy": "It is like checking the size of each container on a shelf: a tiny pouch for one letter, a bigger box for a long number.",
+    "watchFor": "Notice that a char takes just 1 byte while a long long or double takes 8."
+  },
+  "01_Getting_Started_with_Cpp/L2_HW_2_Celsius_to_Fahrenheit_converter": {
+    "title": "Celsius to Fahrenheit converter",
+    "summary": "Converts body temperature from Celsius to Fahrenheit using a formula.",
+    "analogy": "It is like a currency exchange counter: you hand over a value in one unit and get the same amount back in another.",
+    "watchFor": "Watch 37 get multiplied by 9, divided by 5, then increased by 32 to become 98.6."
+  },
+  "02_Operators/L1_Class_1_Last_digit_and_first_digit_of_a_number": {
+    "title": "First and last digit of a number",
+    "summary": "Picks out the first and the last digit of a four-digit number.",
+    "analogy": "Dividing by 10 and keeping the remainder is like tearing the last coupon off a strip, while dividing by 1000 keeps only the first coupon.",
+    "watchFor": "Notice how % 10 gives the last digit and / 1000 throws away everything except the first."
+  },
+  "02_Operators/L1_Class_2_Sum_of_digits_of_a_3_digit_number": {
+    "title": "Sum of digits of a 3-digit number",
+    "summary": "Splits a three-digit number into its hundreds, tens and units and adds them up.",
+    "analogy": "It is like breaking a 573 rupee amount into hundred-rupee notes, ten-rupee notes and coins, then counting the pieces.",
+    "watchFor": "Watch how hundreds, tens and units are each pulled out with / and % before being added."
+  },
+  "02_Operators/L1_Class_3_Evaluate_a_mixed_expression_then_verify": {
+    "title": "Evaluate a mixed expression and verify it",
+    "summary": "Calculates a + b * c - a / b and then checks the answer by doing it step by step.",
+    "analogy": "Like the BODMAS rule from school maths: multiplication and division jump the queue before addition and subtraction.",
+    "watchFor": "Notice that 7 / 3 gives 2, not 2.33, because whole-number division drops the leftover."
+  },
+  "02_Operators/L1_HW_1_Total_seconds_to_h_m_s": {
+    "title": "Total seconds to hours, minutes and seconds",
+    "summary": "Turns a large number of seconds into hours, minutes and seconds.",
+    "analogy": "It is like packing loose sweets: first fill full boxes of 3600, then smaller packets of 60, and whatever is left stays loose.",
+    "watchFor": "Watch the remainder from each division get passed on to the next smaller unit."
+  },
+  "02_Operators/L1_HW_2_Simple_interest_calculator": {
+    "title": "Simple interest calculator",
+    "summary": "Calculates the interest earned on a deposit using principal, rate and time.",
+    "analogy": "It is like a bank fixed deposit: the extra money you get grows with how much you put in, the rate, and how many years you wait.",
+    "watchFor": "Notice the formula P times R times T divided by 100 being worked out in one line."
+  },
+  "02_Operators/L2_Class_1_Read_two_numbers_print_sum_diff_product": {
+    "title": "Sum, difference and product of two numbers",
+    "summary": "Asks for two numbers and prints their sum, difference and product.",
+    "analogy": "It is like a shopkeeper's calculator: you key in two numbers and it shows all three answers at once.",
+    "watchFor": "Watch the two typed numbers land in a and b, then get combined three different ways.",
+    "input": "12 4"
+  },
+  "02_Operators/L2_Class_2_Read_radius_print_circle_area": {
+    "title": "Area of a circle from its radius",
+    "summary": "Asks for a radius and prints the area of that circle.",
+    "analogy": "It is like working out how much dough you need for a round pizza of a given size.",
+    "watchFor": "Notice that the radius is multiplied by itself, so doubling it makes the area four times bigger.",
+    "input": "7"
+  },
+  "02_Operators/L2_Class_3_Read_3_marks_print_total_and_average": {
+    "title": "Total and average of 3 marks",
+    "summary": "Takes marks in three subjects and prints the total and the average.",
+    "analogy": "It is like a class teacher filling your report card: add up the marks, then share them equally across the subjects.",
+    "watchFor": "Watch the total get built first and then divided by 3 to give the average.",
+    "input": "78 85 92"
+  },
+  "02_Operators/L2_HW_1_Bill_price_x_quantity_2_decimals": {
+    "title": "Bill amount with 2 decimal places",
+    "summary": "Multiplies the price of an item by the quantity and prints the bill neatly with two decimals.",
+    "analogy": "It is like a supermarket billing counter that always shows rupees and paise, such as 148.50.",
+    "watchFor": "Notice how fixed and setprecision(2) make the answer always show exactly two digits after the point.",
+    "input": "49.5 3"
+  },
+  "02_Operators/L2_HW_2_Read_a_3_digit_number_print_sum_of_digit": {
+    "title": "Sum of digits of a number you enter",
+    "summary": "Asks for a three-digit number and prints the sum of its digits.",
+    "analogy": "It is like taking a three-digit lock code and adding up the numbers on each wheel.",
+    "watchFor": "Watch the typed number get split into hundreds, tens and units before they are added.",
+    "input": "846"
+  },
+  "02_Operators/L3_Class_1_Print_whether_a_b": {
+    "title": "Print whether a > b",
+    "summary": "Checks whether one number is bigger than another and prints true or false.",
+    "analogy": "It is like a referee comparing two players' heights and simply saying yes or no.",
+    "watchFor": "Notice that boolalpha makes the answer print as the word true instead of 1."
+  },
+  "02_Operators/L3_Class_2_Leap_year_as_a_boolean_expression": {
+    "title": "Leap year as a true/false check",
+    "summary": "Checks in one line whether the year 2024 is a leap year.",
+    "analogy": "It is like a calendar maker's rule card: every fourth year gets an extra day, except century years, unless they divide by 400.",
+    "watchFor": "Watch how the && and || pieces each turn into true or false before combining into the final answer."
+  },
+  "02_Operators/L3_Class_3_Is_a_character_a_vowel_print_the_bool": {
+    "title": "Is a character a vowel?",
+    "summary": "Checks whether a letter is a vowel and prints true or false.",
+    "analogy": "It is like a guard with a list of ten names, small and capital vowels, checking whether the visitor is on the list.",
+    "watchFor": "Notice that as soon as one comparison matches, the whole check becomes true."
+  },
+  "02_Operators/L3_HW_1_Voting_eligibility_as_a_boolean": {
+    "title": "Voting eligibility as true/false",
+    "summary": "Decides whether a person can vote based on age and citizenship.",
+    "analogy": "It is like a polling booth officer who lets you in only if you are 18 or older and also an Indian citizen.",
+    "watchFor": "Watch how both conditions must be true for the && to give true."
+  },
+  "02_Operators/L3_HW_2_Print_the_truth_tables_of_and": {
+    "title": "Truth tables of && and ||",
+    "summary": "Prints every result of combining true and false with AND and with OR.",
+    "analogy": "AND is like a door with two locks that opens only if both keys turn, while OR is a door with two entrances where either one works.",
+    "watchFor": "Notice that AND is true only once in four rows, while OR is false only once."
+  },
+  "03_If_Else/L1_Class_1_Odd_or_even": {
+    "title": "Odd or even",
+    "summary": "Checks whether a number is odd or even.",
+    "analogy": "It is like pairing up students for a dance: if someone is left without a partner, the count is odd.",
+    "watchFor": "Watch the remainder after dividing by 2 decide which branch the program takes."
+  },
+  "03_If_Else/L1_Class_2_Eligible_to_vote": {
+    "title": "Eligible to vote",
+    "summary": "Asks for your age and tells you whether you can vote.",
+    "analogy": "It is like a gatekeeper at a polling booth who checks your age and either lets you in or asks you to wait.",
+    "watchFor": "Notice that with age 17 the condition is false, so the program jumps to the else part.",
+    "input": "17"
+  },
+  "03_If_Else/L1_Class_3_Maximum_of_two_numbers": {
+    "title": "Maximum of two numbers",
+    "summary": "Finds the bigger of two numbers.",
+    "analogy": "It is like holding two mangoes, one in each hand, and picking the heavier one.",
+    "watchFor": "Watch the single comparison a > b decide which number gets printed."
+  },
+  "03_If_Else/L1_HW_1_Positive_negative_or_zero": {
+    "title": "Positive, negative or zero",
+    "summary": "Tells you whether the number you enter is positive, negative or zero.",
+    "analogy": "It is like a thermometer reading: above zero is warm, below zero is freezing, and exactly zero sits on the line.",
+    "watchFor": "Notice how the program checks greater than zero first, and only then tries less than zero.",
+    "input": "-7"
+  },
+  "03_If_Else/L1_HW_2_Divisible_by_5": {
+    "title": "Divisible by 5",
+    "summary": "Checks whether the number you enter can be divided by 5 with nothing left over.",
+    "analogy": "It is like packing chocolates into boxes of 5: if none are left loose, the number divides evenly.",
+    "watchFor": "Watch the remainder n % 5 come out as 0 and send the program into the if branch.",
+    "input": "35"
+  },
+  "03_If_Else/L2_Class_1_Maximum_of_three": {
+    "title": "Maximum of three numbers",
+    "summary": "Finds the biggest of three numbers using decisions inside decisions.",
+    "analogy": "It is like a mini knockout tournament: the first two play, and the winner then plays the third.",
+    "watchFor": "Follow the path: a loses to b in the first check, then b is compared with c."
+  },
+  "03_If_Else/L2_Class_2_Grade_from_marks_A_B_C_F": {
+    "title": "Grade from marks (A, B, C, F)",
+    "summary": "Turns your marks out of 100 into a grade letter.",
+    "analogy": "It is like walking down a staircase of cut-offs: you stop at the first step your marks can reach.",
+    "watchFor": "Notice that 82 fails the 90 check but passes the 75 check, so the grade becomes B and the rest are skipped.",
+    "input": "82"
+  },
+  "03_If_Else/L2_Class_3_Triangle_type_from_its_sides": {
+    "title": "Triangle type from its sides",
+    "summary": "Decides whether a triangle is equilateral, isosceles or scalene from its three sides.",
+    "analogy": "It is like sorting sticks: all three the same length, just two matching, or all different.",
+    "watchFor": "Watch the very first check succeed because all three sides are 5, so the other checks never run."
+  },
+  "03_If_Else/L2_HW_1_Largest_of_three_distinct_numbers": {
+    "title": "Largest of three distinct numbers",
+    "summary": "Asks for three different numbers and prints the largest.",
+    "analogy": "It is like a talent judge asking each contestant in turn: are you better than both of the others?",
+    "watchFor": "Notice that a fails, b passes both comparisons, and the program never needs to check c.",
+    "input": "14 39 27"
+  },
+  "03_If_Else/L2_HW_2_Calculator_using_if_else": {
+    "title": "Calculator using if-else",
+    "summary": "Reads a simple sum like 12 * 4 and prints the answer.",
+    "analogy": "It is like a cashier who looks at the sign you wrote and then decides whether to add, subtract, multiply or divide.",
+    "watchFor": "Watch the program test the operator against +, then -, then finally match *.",
+    "input": "12 * 4"
+  },
+  "03_If_Else/L3_Class_1_Leap_year_with_branching": {
+    "title": "Leap year with branching",
+    "summary": "Asks for a year and works out whether it is a leap year using step-by-step checks.",
+    "analogy": "It is like a three-question quiz at a calendar office: divisible by 4, then by 100, then by 400.",
+    "watchFor": "Notice that 1900 passes the 4 and 100 checks but fails the 400 check, so it is not a leap year.",
+    "input": "1900"
+  },
+  "03_If_Else/L3_Class_2_Classify_a_character_vowel_consonant_dig": {
+    "title": "Classify a character: vowel, consonant, digit or other",
+    "summary": "Tells you whether the character you type is a digit, a vowel, a consonant or something else.",
+    "analogy": "It is like a post office sorting letters into bins: numbers here, vowels there, other letters in a third bin, and odd items in the last.",
+    "watchFor": "Watch k skip the digit and vowel checks before landing in the consonant branch.",
+    "input": "k"
+  },
+  "03_If_Else/L3_Class_3_Is_a_point_inside_a_rectangle": {
+    "title": "Is a point inside a rectangle?",
+    "summary": "Checks whether a point you give lies inside a 10 by 5 rectangle.",
+    "analogy": "It is like checking whether a cricket ball landed inside the boundary rope, both across and along the field.",
+    "watchFor": "Notice that x = 4 is fine, but y = 7 is taller than the height 5, so the point is outside.",
+    "input": "4 7"
+  },
+  "03_If_Else/L3_HW_1_Ticket_price_by_age_group": {
+    "title": "Ticket price by age group",
+    "summary": "Asks for an age and prints the matching ticket price.",
+    "analogy": "It is like a zoo ticket counter with a price board: toddlers free, children cheap, adults full price, seniors a discount.",
+    "watchFor": "Watch age 8 skip the under-5 rule and match the 5 to 12 group for Rs 50.",
+    "input": "8"
+  },
+  "03_If_Else/L3_HW_2_Valid_triangle_and_its_type": {
+    "title": "Valid triangle and its type",
+    "summary": "Checks whether three sides can form a triangle and, if so, what kind it is.",
+    "analogy": "It is like trying to build a triangle from three sticks: any two together must be longer than the third, or the ends will not meet.",
+    "watchFor": "Notice that 5, 5 and 8 pass the validity test, then two equal sides make it isosceles.",
+    "input": "5 5 8"
+  },
+  "04_Switch_Case/L1_Class_1_Calculator_using_switch": {
+    "title": "Calculator using switch",
+    "summary": "Reads a simple sum like 18 / 4 and prints the answer, jumping straight to the right operation.",
+    "analogy": "It is like a lift: you press the button for your operator and it goes directly to that floor without stopping at others.",
+    "watchFor": "Watch the switch jump straight to the / case, check that b is not zero, then break out.",
+    "input": "18 / 4"
+  },
+  "04_Switch_Case/L1_Class_2_Day_of_the_week_from_a_number": {
+    "title": "Day of the week from a number",
+    "summary": "Turns a number from 1 to 7 into the name of a weekday.",
+    "analogy": "It is like a row of numbered lockers, each holding one day's name; you open the locker matching your number.",
+    "watchFor": "Notice how the program lands directly on case 5 and the break stops it from printing more days.",
+    "input": "5"
+  },
+  "04_Switch_Case/L1_Class_3_Vowel_check_using_switch": {
+    "title": "Vowel check using switch",
+    "summary": "Tells you whether the letter you type is a vowel or a consonant.",
+    "analogy": "It is like a guest list where ten names share the same table: any of the vowels gets the same seat.",
+    "watchFor": "Watch several case labels stacked together all lead to the same vowel message.",
+    "input": "e"
+  },
+  "04_Switch_Case/L1_HW_1_Menu_driven_program": {
+    "title": "Menu-driven calculator",
+    "summary": "Shows a menu, lets you pick an operation, then does it on two numbers.",
+    "analogy": "It is like ordering at a restaurant: you pick item number 3 from the menu and the kitchen makes just that dish.",
+    "watchFor": "Notice that choice 3 sends the program to the multiply case, giving 6 times 7.",
+    "input": "3 6 7"
+  },
+  "04_Switch_Case/L1_HW_2_Number_of_days_in_a_month": {
+    "title": "Number of days in a month",
+    "summary": "Asks for a month number and prints how many days it has in 2024.",
+    "analogy": "It is like the knuckle trick for remembering months: some are 31, some are 30, and February needs a special leap year check.",
+    "watchFor": "Watch month 2 land in the February case, where the leap year test picks 29 days.",
+    "input": "2"
+  },
+  "04_Switch_Case/L2_Class_1_Print_the_ASCII_of_a_character": {
+    "title": "ASCII value of a character",
+    "summary": "Shows the secret number the computer uses to store the letter A.",
+    "analogy": "Every letter has a roll number in the computer's class register; capital A's roll number is 65.",
+    "watchFor": "Notice that storing the char in an int box reveals its number, 65."
+  },
+  "04_Switch_Case/L2_Class_2_Convert_case_using_ASCII": {
+    "title": "Convert case using ASCII",
+    "summary": "Turns a small letter into a capital letter and back again by shifting its number.",
+    "analogy": "Small and capital letters live on two floors of the same building, exactly 32 rooms apart, so you just move up or down 32.",
+    "watchFor": "Watch g become G when 32 is subtracted, then turn back into g when 32 is added."
+  },
+  "04_Switch_Case/L2_Class_3_Count_vowels_in_a_string": {
+    "title": "Count vowels in a string",
+    "summary": "Counts how many vowels appear in the phrase Hello World.",
+    "analogy": "It is like walking along a row of letter tiles with a clicker, pressing it each time you step on a vowel.",
+    "watchFor": "Notice the count going up only at e, o and o as the loop walks through each letter."
+  },
+  "04_Switch_Case/L2_HW_1_Reverse_a_string": {
+    "title": "Reverse a string",
+    "summary": "Writes the word hello backwards.",
+    "analogy": "It is like reading a word in a mirror: you start from the last letter and copy each one moving left.",
+    "watchFor": "Watch the reversed word grow one letter at a time as the position moves from the end to the start."
+  },
+  "04_Switch_Case/L2_HW_2_Check_a_one_word_palindrome": {
+    "title": "Check a one-word palindrome",
+    "summary": "Checks whether the word madam reads the same forwards and backwards.",
+    "analogy": "It is like folding a paper strip in half and checking that the letters on both sides match up.",
+    "watchFor": "Notice the first and last letters being compared, then the next pair inward, until the middle is reached."
+  },
+  "05_Loops/L1_Class_1_Print_1_N_and_even_numbers_to_N": {
+    "title": "Print 1 to N and the even numbers up to N",
+    "summary": "Prints all numbers from 1 to 10, then just the even ones.",
+    "analogy": "The first loop is like climbing every stair, and the second is like taking the stairs two at a time.",
+    "watchFor": "Notice the second loop starts at 2 and jumps by 2 each time instead of 1."
+  },
+  "05_Loops/L1_Class_2_Sum_of_first_N_numbers": {
+    "title": "Sum of first N numbers",
+    "summary": "Adds up all the numbers from 1 to 20.",
+    "analogy": "It is like dropping coins into a piggy bank: 1 rupee, then 2, then 3, and checking the total at the end.",
+    "watchFor": "Watch the sum grow with each round of the loop until it reaches 210."
+  },
+  "05_Loops/L1_Class_3_Multiplication_table": {
+    "title": "Multiplication table",
+    "summary": "Prints the times table of 7 from 1 to 10.",
+    "analogy": "It is like reciting the 7 table in class, one line after another, without writing ten separate lines of code.",
+    "watchFor": "Notice that only i changes each round, while 7 stays the same."
+  },
+  "05_Loops/L1_HW_1_Print_N_down_to_1": {
+    "title": "Print N down to 1",
+    "summary": "Counts down from 10 to 1.",
+    "analogy": "It is like a rocket launch countdown: start high and subtract one each second.",
+    "watchFor": "Watch i start at 10 and shrink by one each round until the loop stops after 1."
+  },
+  "05_Loops/L1_HW_2_Factorial_with_a_loop": {
+    "title": "Factorial with a loop",
+    "summary": "Multiplies 1 times 2 times 3 up to 6 to get 6 factorial.",
+    "analogy": "It is like counting how many ways 6 friends can stand in a line: 6 choices for first place, 5 for second, and so on.",
+    "watchFor": "Notice how the answer grows very fast, reaching 720 in just six rounds."
+  },
+  "06_Patterns/L1_Class_1_Sum_of_digits_and_reverse_of_a_number": {
+    "title": "Sum of digits and reverse of a number",
+    "summary": "Adds up the digits of 4527 and also writes the number backwards.",
+    "analogy": "It is like peeling stickers off the right end of a strip one at a time, adding their values and sticking them onto a new strip in reverse order.",
+    "watchFor": "Watch each digit get chopped off the end, added to sum, and pushed onto reversed."
+  },
+  "06_Patterns/L1_Class_2_Sum_of_squares_and_alternating_series": {
+    "title": "Sum of squares and alternating series",
+    "summary": "Adds the squares of 1 to 6, then adds and subtracts 1 to 6 by turns.",
+    "analogy": "The first part is like stacking square tiles of growing size; the second is like taking one step forward and one step back, each a bit bigger.",
+    "watchFor": "Notice odd numbers are added and even numbers are subtracted in the second loop."
+  },
+  "06_Patterns/L1_Class_3_Number_triangle": {
+    "title": "Number triangle",
+    "summary": "Prints a triangle where each row counts from 1 up to the row number.",
+    "analogy": "It is like a child learning to count, going one number further on each new try.",
+    "watchFor": "Watch the inner loop run one more time on each new row."
+  },
+  "06_Patterns/L1_HW_1_Harmonic_series_1_1_2_1_N": {
+    "title": "Harmonic series 1 + 1/2 + ... + 1/N",
+    "summary": "Adds 1, a half, a third, a quarter and a fifth together.",
+    "analogy": "It is like sharing one pizza with 1 person, then 2, then 3, and adding up the slice you get each time.",
+    "watchFor": "Notice how each piece added gets smaller, so the total grows more and more slowly."
+  },
+  "06_Patterns/L1_HW_2_Floyd_s_triangle": {
+    "title": "Floyd's triangle",
+    "summary": "Prints the numbers 1 to 15 in a triangle, one more number in each row.",
+    "analogy": "It is like seating people in a stadium where each row has one more seat, numbering them in order as they arrive.",
+    "watchFor": "Watch num keep counting up across rows instead of restarting at 1."
+  },
+  "06_Patterns/L2_Class_1_Single_row_and_single_column_of_stars": {
+    "title": "Single row and single column of stars",
+    "summary": "Prints five stars side by side, then five stars stacked one below another.",
+    "analogy": "It is like placing five coins in a line on a table, then stacking five coins in a tower.",
+    "watchFor": "Notice the only difference is where the endl goes: after the loop for the row, inside it for the column."
+  },
+  "06_Patterns/L2_Class_2_Solid_square": {
+    "title": "Solid square",
+    "summary": "Prints a 4 by 4 square made of stars.",
+    "analogy": "It is like laying floor tiles: finish one full row, then move down and start the next.",
+    "watchFor": "Watch the inner loop print 4 stars before the outer loop moves to a new row."
+  },
+  "06_Patterns/L2_Class_3_Right_angled_triangle": {
+    "title": "Right-angled triangle",
+    "summary": "Prints a triangle of stars where each row has one more star than the last.",
+    "analogy": "It is like building a staircase out of bricks, adding one more brick on each step.",
+    "watchFor": "Notice the number of stars in each row is equal to the row number."
+  },
+  "06_Patterns/L2_HW_1_Inverted_right_angled_triangle": {
+    "title": "Inverted right-angled triangle",
+    "summary": "Prints a triangle of stars that starts wide and gets one star shorter each row.",
+    "analogy": "It is like a stack of plates where you remove one plate from each new pile.",
+    "watchFor": "Watch n - i + 1 shrink from 5 down to 1 as the rows go by."
+  },
+  "06_Patterns/L2_HW_2_Solid_rectangle_of_R_rows_and_C_columns": {
+    "title": "Solid rectangle of R rows and C columns",
+    "summary": "Prints a block of stars 3 rows tall and 6 columns wide.",
+    "analogy": "It is like arranging chairs in a hall: 3 rows with 6 chairs in each.",
+    "watchFor": "Notice the outer loop controls the rows and the inner loop controls how many stars go in each."
+  },
+  "06_Patterns/L3_Class_1_Star_pyramid": {
+    "title": "Star pyramid",
+    "summary": "Prints a centred pyramid of stars that gets wider at the bottom.",
+    "analogy": "It is like stacking cups into a pyramid: each lower row is wider and starts a little further to the left.",
+    "watchFor": "Notice how the spaces shrink by one each row while the stars grow by two."
+  },
+  "06_Patterns/L3_Class_2_Inverted_pyramid": {
+    "title": "Inverted pyramid",
+    "summary": "Prints an upside-down pyramid of stars that narrows to a single star.",
+    "analogy": "It is like a funnel: wide at the top and narrowing down to one point.",
+    "watchFor": "Watch the spaces grow by one each row while the stars shrink by two."
+  },
+  "06_Patterns/L3_Class_3_Palindromic_number_pyramid": {
+    "title": "Palindromic number pyramid",
+    "summary": "Prints a pyramid where each row counts up to the row number and back down, like 12321.",
+    "analogy": "It is like climbing up a hill and then walking back down the other side using the same steps.",
+    "watchFor": "Notice each row uses two loops: one counting up, then one counting back down."
+  },
+  "06_Patterns/L3_HW_1_Right_aligned_triangle": {
+    "title": "Right-aligned triangle",
+    "summary": "Prints a triangle of stars that leans against the right side.",
+    "analogy": "It is like books on a shelf pushed to the right: empty space fills the left side of each row.",
+    "watchFor": "Watch spaces and stars always add up to 5 in every row."
+  },
+  "06_Patterns/L3_HW_2_Pyramid_using_spaced_stars": {
+    "title": "Pyramid using spaced stars",
+    "summary": "Prints a pyramid where each row has as many stars as its row number, with gaps between them.",
+    "analogy": "It is like a group photo with each row of people standing a little apart, and each back row having one more person.",
+    "watchFor": "Notice that because each star has a space after it, only i stars are needed to make the pyramid shape."
+  },
+  "06_Patterns/L4_Class_1_Full_diamond": {
+    "title": "Full diamond",
+    "summary": "Prints a diamond of stars by drawing a pyramid and then an upside-down pyramid.",
+    "analogy": "It is like two pyramids glued base to base, one pointing up and one pointing down.",
+    "watchFor": "Watch the second half start one row shorter so the widest row is not printed twice."
+  },
+  "06_Patterns/L4_Class_2_Hollow_square": {
+    "title": "Hollow square",
+    "summary": "Prints only the border of a square, leaving the inside empty.",
+    "analogy": "It is like a photo frame: solid on all four edges with an empty space in the middle.",
+    "watchFor": "Notice that a star is printed only on the first or last row or column; everywhere else gets a blank."
+  },
+  "06_Patterns/L4_Class_3_Alphabet_triangle": {
+    "title": "Alphabet triangle",
+    "summary": "Prints a triangle of letters where each row goes A, B, C up to the row number.",
+    "analogy": "It is like a child reciting the alphabet and getting one letter further on each try.",
+    "watchFor": "Watch 'A' + j - 1 turn the numbers 1, 2, 3 into the letters A, B, C."
+  },
+  "06_Patterns/L4_HW_1_Hollow_pyramid": {
+    "title": "Hollow pyramid",
+    "summary": "Prints only the outline of a star pyramid with an empty inside.",
+    "analogy": "It is like a tent seen from the front: two slanting sides and a flat floor, with open space inside.",
+    "watchFor": "Notice stars appear only at the first and last spot of each row, except the bottom row which is fully filled."
+  },
+  "06_Patterns/L4_HW_2_Alphabet_pyramid": {
+    "title": "Alphabet pyramid",
+    "summary": "Prints a centred pyramid of letters like A, ABA, ABCBA.",
+    "analogy": "It is like a mountain of letters: climb up the alphabet to the peak, then walk back down.",
+    "watchFor": "Watch each row go up the alphabet to the row's letter and then back down to A."
+  }
+}

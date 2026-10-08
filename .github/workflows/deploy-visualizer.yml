@@ -1,0 +1,61 @@
+# Builds the DryRun visualizer (visualizer/) and publishes it to GitHub Pages
+# on every push to main. Add a new topic folder or .cpp file, push, and the
+# website updates itself a minute or two later.
+name: Deploy visualizer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: visualizer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: visualizer/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Compares the in-browser interpreter with the real g++ output for every
+      # program. A failure here means a new program uses a C++ feature the
+      # visualizer can't animate yet — the site still deploys (that program
+      # shows its code + real output instead), but the run is flagged.
+      - name: Verify every program against g++
+        run: npm test
+        continue-on-error: true
+
+      - name: Build site
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: visualizer/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

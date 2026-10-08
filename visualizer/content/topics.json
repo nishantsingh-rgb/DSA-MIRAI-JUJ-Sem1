@@ -1,0 +1,32 @@
+{
+  "01_Getting_Started_with_Cpp": {
+    "title": "Getting Started with C++",
+    "tagline": "Your very first words to a computer.",
+    "blurb": "You learn how to make the computer print text on the screen and how to store simple values like numbers, letters and names in labelled boxes called variables. By the end you can do small calculations like area, temperature conversion and swapping two values."
+  },
+  "02_Operators": {
+    "title": "Operators",
+    "tagline": "The plus, minus and yes-or-no tools of programming.",
+    "blurb": "You learn how the computer does maths, pulls digits out of numbers, reads input from the keyboard and answers true-or-false questions. These small tools are the building blocks for every decision and calculation that comes later."
+  },
+  "03_If_Else": {
+    "title": "If Else",
+    "tagline": "Teaching the computer to make decisions.",
+    "blurb": "You learn how a program can choose a different path depending on a condition, just like you decide to carry an umbrella only if it is raining. You will build grade checkers, ticket counters, leap year testers and triangle detectives."
+  },
+  "04_Switch_Case": {
+    "title": "Switch Case",
+    "tagline": "Pick the right door from a list of choices.",
+    "blurb": "You learn the switch statement, a neat way to jump straight to the matching option, like a lift going directly to the floor you pressed. You also peek at how characters are stored as numbers and play with words letter by letter."
+  },
+  "05_Loops": {
+    "title": "Loops",
+    "tagline": "Do it again and again without writing it again.",
+    "blurb": "You learn how to make the computer repeat a task many times with just a few lines, like counting, adding up numbers or printing a times table. Loops save you from copying the same line a hundred times."
+  },
+  "06_Patterns": {
+    "title": "Patterns",
+    "tagline": "Draw shapes on screen, one row at a time.",
+    "blurb": "You learn to use a loop inside another loop to draw squares, triangles, pyramids and diamonds out of stars, numbers and letters. Each pattern trains you to spot the rule behind how many spaces and symbols go on each row."
+  }
+}
