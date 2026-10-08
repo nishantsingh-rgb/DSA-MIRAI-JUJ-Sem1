@@ -9,16 +9,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: deploy-visualizer
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -46,16 +44,10 @@ jobs:
       - name: Build site
         run: npm run build
 
-      - uses: actions/upload-pages-artifact@v3
+      # Publishes visualizer/dist to the gh-pages branch, which GitHub Pages serves.
+      - name: Publish to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: visualizer/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          branch: gh-pages
+          folder: visualizer/dist
+          clean: true

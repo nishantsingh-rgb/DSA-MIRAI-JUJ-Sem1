@@ -2,7 +2,7 @@
 
 An animated, step-by-step visualizer for **every program in this course**. Pick a topic, pick a program, press ▶, and watch the code run one line at a time, with plain-English explanations.
 
-**Live site (after setup below):** https://nishantsingh-rgb.github.io/DSA-MIRAI-JUJ-Sem1/
+**Live site:** https://nishantsingh-rgb.github.io/DSA-MIRAI-JUJ-Sem1/
 
 - [design.md](design.md): how it looks and why
 - [flow.md](flow.md): how it works and how updates flow
@@ -31,16 +31,12 @@ You don't touch the website code at all. Keep doing what you already do:
 
 ---
 
-## One-time setup: turn on hosting (2 minutes)
+## How hosting works (already set up)
 
-1. Push this folder to GitHub (Claude already did this for you, if you allowed it).
-2. On GitHub, open the repo → **Settings** → **Pages** (in the left sidebar).
-3. Under **Build and deployment → Source**, choose **GitHub Actions**.
-4. Go to the **Actions** tab → **Deploy visualizer** → **Run workflow** (or just push any change).
-5. When it turns green ✅, your site is live at
-   **https://nishantsingh-rgb.github.io/DSA-MIRAI-JUJ-Sem1/**
+The site is hosted free on **GitHub Pages** at
+**https://nishantsingh-rgb.github.io/DSA-MIRAI-JUJ-Sem1/**
 
-That's it. From now on, every push to `main` updates the site automatically.
+On every push to `main`, the workflow `.github/workflows/deploy-visualizer.yml` tests and builds the site, then publishes it to the `gh-pages` branch, which GitHub Pages serves. You never need to touch the `gh-pages` branch yourself.
 
 ---
 
@@ -80,7 +76,7 @@ The built site is plain static files, so any host works:
 | Problem | Fix |
 |---|---|
 | The Actions run shows a ⚠️ on "Verify every program against g++" | A new program uses a C++ feature the visualizer can't animate yet. The site still deploys, and that page shows the code and real output instead of the animation. Ask Claude to "teach the visualizer engine <feature>". |
-| The site shows 404 after setup | Make sure **Settings → Pages → Source** is set to **GitHub Actions**, then re-run the workflow. |
+| The site didn't update after a push | Open the **Actions** tab and check that the latest *Deploy visualizer* run is green; click **Re-run** if it failed. In **Settings → Pages**, the source should be *Deploy from a branch → gh-pages*. |
 | A program waits for input and shows 0 | Add an `"input"` value for it in `content/programs.json`. Visitors can also type their own input on the page. |
 | `npm: command not found` | Install Node.js from https://nodejs.org (LTS version). |
 
