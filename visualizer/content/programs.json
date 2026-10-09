@@ -469,5 +469,185 @@
     "summary": "Prints a centred pyramid of letters like A, ABA, ABCBA.",
     "analogy": "It is like a mountain of letters: climb up the alphabet to the peak, then walk back down.",
     "watchFor": "Watch each row go up the alphabet to the row's letter and then back down to A."
+  },
+  "07_Time_Complexity/L1_Class_1_Calculate_TC_of_a_standard_for_loop": {
+    "title": "Time complexity of a simple for loop",
+    "summary": "Counts how many times a loop from 1 to N runs, showing that the work grows exactly with N.",
+    "analogy": "It is like climbing N stairs: 10 stairs means 10 steps, 20 stairs means 20 steps.",
+    "watchFor": "Watch count go up by one on every pass until it equals N."
+  },
+  "07_Time_Complexity/L1_Class_2_Calculate_TC_of_a_while_loop_halving_N": {
+    "title": "Time complexity of a halving loop",
+    "summary": "Keeps cutting 64 in half until it reaches 1 and counts how many cuts it took.",
+    "analogy": "It is like folding a sheet of paper in half again and again: it gets tiny very quickly.",
+    "watchFor": "Notice temp shrinks 64, 32, 16, 8, 4, 2, 1 in only 6 passes, far fewer than 64."
+  },
+  "07_Time_Complexity/L1_Class_3_Differentiate_O_1_ops_from_O_N_ops": {
+    "title": "O(1) versus O(N)",
+    "summary": "Adds 1 to N twice: once with a loop that takes N steps, once with a formula that takes one step.",
+    "analogy": "Counting a pile of coins one by one versus reading the total printed on the bag.",
+    "watchFor": "Watch the loop do 8 additions while the formula gets the same 36 in one line."
+  },
+  "07_Time_Complexity/L1_HW_1_Best_vs_worst_case_of_linear_search": {
+    "title": "Best vs worst case of linear search",
+    "summary": "Searches the same list twice: once for the first item and once for the last, counting comparisons.",
+    "analogy": "Looking for your friend in a queue: lucky if they stand first, unlucky if they stand last.",
+    "watchFor": "Notice the first search stops after 1 comparison but the second needs all 6."
+  },
+  "07_Time_Complexity/L1_HW_2_TC_of_finding_max_element_in_array": {
+    "title": "Time complexity of finding the maximum",
+    "summary": "Finds the biggest number in a list and counts the comparisons it needed.",
+    "analogy": "Like finding the tallest student: you must look at every single student, there is no shortcut.",
+    "watchFor": "Watch maxVal change only when a bigger number shows up, while comparisons ticks every pass."
+  },
+  "07_Time_Complexity/L2_Class_1_TC_of_nested_loop_1_to_N_1_to_N": {
+    "title": "Nested loops: O(N^2)",
+    "summary": "Runs a loop inside a loop, both from 1 to N, and counts how often the inner body runs.",
+    "analogy": "Every student in a class shaking hands with every student in another class of the same size.",
+    "watchFor": "Watch j restart from 1 every time i moves on, so count reaches 4 x 4 = 16."
+  },
+  "07_Time_Complexity/L2_Class_2_TC_of_dependent_loop_j_from_1_to_i": {
+    "title": "Dependent nested loops",
+    "summary": "Runs an inner loop that goes only up to i, so each row does a little more work than the last.",
+    "analogy": "Like stacking a staircase of bricks: 1 brick, then 2, then 3, up to N.",
+    "watchFor": "Notice the inner loop runs 1, 2, 3, 4, 5 times, adding up to 15."
+  },
+  "07_Time_Complexity/L2_Class_3_TC_of_i_times_2_loop_Log_N": {
+    "title": "Doubling loop: O(log N)",
+    "summary": "Doubles i each time until it passes 100 and prints every value it visits.",
+    "analogy": "Like a rumour that doubles the people who know it every hour: it reaches a crowd fast.",
+    "watchFor": "Watch i jump 1, 2, 4, 8 ... 64 and the loop finish after only 7 passes."
+  },
+  "07_Time_Complexity/L2_HW_1_TC_of_three_nested_loops_O_N_cubed": {
+    "title": "Three nested loops: O(N^3)",
+    "summary": "Puts three loops inside each other and counts how often the innermost line runs.",
+    "analogy": "Like counting every small cube inside a 3 x 3 x 3 Rubik's cube.",
+    "watchFor": "Watch k cycle fully for every j, and j for every i, giving 27 in total."
+  },
+  "07_Time_Complexity/L2_HW_2_TC_of_i_plus_2_vs_i_times_2_loops": {
+    "title": "i += 2 versus i *= 2",
+    "summary": "Runs two loops up to 32, one adding 2 each time and one doubling, and compares their step counts.",
+    "analogy": "Walking two steps at a time versus taking a lift that doubles your floor each ride.",
+    "watchFor": "Notice the adding loop needs 16 passes while the doubling loop needs only 6."
+  },
+  "07_Time_Complexity/L3_Class_1_SC_of_creating_an_array_of_size_N": {
+    "title": "Space used by an array",
+    "summary": "Creates an array of N numbers, fills it and prints how many bytes it occupies.",
+    "analogy": "Like booking N seats in a cinema: more friends means more seats taken.",
+    "watchFor": "Watch the array boxes fill up one by one, then see 5 ints take 20 bytes."
+  },
+  "07_Time_Complexity/L3_Class_2_SC_of_basic_recursion": {
+    "title": "Stack space of recursion",
+    "summary": "Adds 1 to N using a function that calls itself and tracks how many calls are waiting at once.",
+    "analogy": "Like a pile of plates: each new call adds a plate, and they come off only when the bottom one is done.",
+    "watchFor": "Watch the call stack grow to 5 frames deep before the answers start coming back."
+  },
+  "07_Time_Complexity/L3_Class_3_Time_Space_trade_off_with_prefix_sums": {
+    "title": "Time-space trade-off with prefix sums",
+    "summary": "Finds a range sum twice: by looping over the range, and by using a prepared prefix array.",
+    "analogy": "Like keeping a running total in your expense notebook so you never need to re-add old bills.",
+    "watchFor": "Notice the prefix array costs extra boxes, but the final answer needs just one subtraction."
+  },
+  "07_Time_Complexity/L3_HW_1_Calculate_SC_of_nested_arrays_matrices": {
+    "title": "Space used by a matrix",
+    "summary": "Fills a 3 by 4 grid of numbers, prints it and counts how many cells it uses.",
+    "analogy": "Like a chocolate bar with rows and columns: rows times columns gives the number of pieces.",
+    "watchFor": "Watch the grid fill row by row until all 12 cells are used."
+  },
+  "07_Time_Complexity/L3_HW_2_O_1_space_vs_O_N_space_reverse_an_array": {
+    "title": "Reverse an array: O(1) vs O(N) space",
+    "summary": "Reverses a list two ways: by copying it into a new array, and by swapping ends in place.",
+    "analogy": "Rewriting a list backwards on a new page versus swapping the cards in your own hand.",
+    "watchFor": "Watch left and right walk towards each other, swapping, without any second array."
+  },
+  "08_Functions/L1_Class_1_isPrime_n": {
+    "title": "isPrime(n)",
+    "summary": "Uses an isPrime function to print every prime number from 1 to 20.",
+    "analogy": "Like a ticket checker at a gate: hand it a number and it answers yes or no.",
+    "watchFor": "Watch the call jump into isPrime and leave early with false the moment a divisor is found."
+  },
+  "08_Functions/L1_Class_2_factorial_n": {
+    "title": "factorial(n)",
+    "summary": "Declares a factorial function above main, defines it below, and prints 0! to 5!.",
+    "analogy": "Like a recipe card: the title on the menu is the declaration, the cooking steps are the definition.",
+    "watchFor": "Notice main calls factorial before its body appears in the file, thanks to the prototype."
+  },
+  "08_Functions/L1_Class_3_max_a_b_and_pass_by_value": {
+    "title": "max(a, b) and pass by value",
+    "summary": "Finds the bigger of two numbers with a function, then shows a function cannot change the caller's variable.",
+    "analogy": "Giving a friend a photocopy of your notes: they can scribble on it, your original stays clean.",
+    "watchFor": "Watch x become 100 inside tryToChange while p in main stays 17."
+  },
+  "08_Functions/L1_HW_1_sumOfDigits_n": {
+    "title": "sumOfDigits(n)",
+    "summary": "Adds up the digits of 98765 using a function.",
+    "analogy": "Like emptying a piggy bank coin by coin and adding up what falls out.",
+    "watchFor": "Notice n shrinks to 0 inside the function but num in main is untouched."
+  },
+  "08_Functions/L1_HW_2_isPalindromeNumber_n": {
+    "title": "isPalindromeNumber(n)",
+    "summary": "Checks whether a number reads the same forwards and backwards.",
+    "analogy": "Like the word MADAM: read it from either end and you get the same thing.",
+    "watchFor": "Watch reversed get built digit by digit, then compared with the saved original."
+  },
+  "08_Functions/L2_Class_1_nCr_using_a_factorial_helper": {
+    "title": "nCr using a factorial helper",
+    "summary": "Works out how many ways to choose r items from n by calling factorial three times.",
+    "analogy": "Like picking 2 players out of 6 for a team: nCr counts every possible pair.",
+    "watchFor": "Watch nCr call factorial again and again, each call with its own fresh variables."
+  },
+  "08_Functions/L2_Class_2_power_base_exp_with_a_default_argument": {
+    "title": "power(base, exp) with a default",
+    "summary": "Raises a number to a power, and uses a default exponent of 2 when none is given.",
+    "analogy": "Like a coffee machine that makes a regular size unless you press a different button.",
+    "watchFor": "Notice power(7) still works: exp quietly takes its default value 2."
+  },
+  "08_Functions/L2_Class_3_Area_functions_for_shapes": {
+    "title": "Area functions for shapes",
+    "summary": "Uses three small functions to work out the area of a circle, a rectangle and a triangle.",
+    "analogy": "Like a toolbox with one labelled tool per job instead of one tool for everything.",
+    "watchFor": "Watch each call carry its own measurements in and bring one area back."
+  },
+  "08_Functions/L2_HW_1_min_max_of_three_via_a_function": {
+    "title": "min/max of three via a function",
+    "summary": "Builds maxOfThree and minOfThree out of smaller two-number helpers.",
+    "analogy": "Like a knockout tournament: the winner of the first match plays the third player.",
+    "watchFor": "Notice maxOfThree calls maxOfTwo twice, once inside the other."
+  },
+  "08_Functions/L2_HW_2_isLeapYear_y_returning_bool": {
+    "title": "isLeapYear(y) returning bool",
+    "summary": "Tests four years with a function that returns true or false for leap years.",
+    "analogy": "Like a calendar rule book that answers one question: does February get 29 days?",
+    "watchFor": "Watch 1900 fail the century rule while 2000 passes the 400 rule."
+  },
+  "08_Functions/L3_Class_1_Reverse_a_number": {
+    "title": "Reverse a number",
+    "summary": "Reverses the digits of a number using a function, including one with trailing zeros.",
+    "analogy": "Like taking books off one shelf and stacking them on another: the last one off ends up first.",
+    "watchFor": "Notice the reverse of 1200 is 21, because leading zeros vanish."
+  },
+  "08_Functions/L3_Class_2_Sum_of_digits": {
+    "title": "Sum of digits",
+    "summary": "Adds up the digits of three different numbers using one reusable function.",
+    "analogy": "Like a cashier totalling the coins in each customer's hand, one customer at a time.",
+    "watchFor": "Watch the same function run three times, each time on a fresh copy of the number."
+  },
+  "08_Functions/L3_Class_3_Count_digits": {
+    "title": "Count digits",
+    "summary": "Counts how many digits a number has, taking care of the special case 0.",
+    "analogy": "Like counting the floors of a building by removing one floor at a time from the top.",
+    "watchFor": "Notice countDigits(0) returns 1 straight away instead of entering the loop."
+  },
+  "08_Functions/L3_HW_1_Palindrome_number": {
+    "title": "Palindrome number",
+    "summary": "Checks four numbers for palindromes by comparing each with its reverse.",
+    "analogy": "Like checking whether a word looks the same in a mirror.",
+    "watchFor": "Watch isPalindrome hand the work to reverseNumber and simply compare the result."
+  },
+  "08_Functions/L3_HW_2_Armstrong_number_and_largest_digit": {
+    "title": "Armstrong number and largest digit",
+    "summary": "Checks whether numbers equal the sum of their digits raised to the digit count, then finds the largest digit.",
+    "analogy": "Like a secret club where a number gets in only if its powered-up digits add back to itself.",
+    "watchFor": "Watch 153 become 1 + 125 + 27 = 153, using countDigits and power together."
   }
 }

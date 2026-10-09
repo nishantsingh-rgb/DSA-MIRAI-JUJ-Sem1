@@ -28,5 +28,15 @@
     "title": "Patterns",
     "tagline": "Draw shapes on screen, one row at a time.",
     "blurb": "You learn to use a loop inside another loop to draw squares, triangles, pyramids and diamonds out of stars, numbers and letters. Each pattern trains you to spot the rule behind how many spaces and symbols go on each row."
+  },
+  "07_Time_Complexity": {
+    "title": "Time Complexity",
+    "tagline": "How much slower does it get when the input gets bigger?",
+    "blurb": "You learn to measure a program by counting its steps instead of timing it with a clock. Loops that run N times, loops inside loops, loops that halve or double, and even the memory a program uses all get a simple label like O(N), O(N^2) or O(log N), so you can tell a fast idea from a slow one before you write it."
+  },
+  "08_Functions": {
+    "title": "Functions",
+    "tagline": "Give a piece of code a name and reuse it anywhere.",
+    "blurb": "You learn to pack a job like checking for a prime, finding a factorial or reversing a number into its own named function, then call it whenever you need it. You see how values travel in through parameters and back out through return, and how small functions team up to solve bigger digit puzzles."
   }
 }

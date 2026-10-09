@@ -48,6 +48,16 @@ int main() { int a = 5; twice(a); cout << fact(5) << " " << a << endl; return 0;
     expect(t.steps.some((s) => s.kind === 'call')).toBe(true);
   });
 
+  it('default arguments, in the definition or the prototype', () => {
+    const t = out(`#include <iostream>
+using namespace std;
+int area(int w, int h = 3);
+int power(int b, int e = 2) { int r = 1; for (int i = 0; i < e; i++) r *= b; return r; }
+int main() { cout << power(5) << " " << power(2, 5) << " " << area(4) << endl; return 0; }
+int area(int w, int h) { return w * h; }`);
+    expect(t.stdout).toBe('25 32 12\n');
+  });
+
   it('arrays, vectors and bubble sort', () => {
     const t = out(`#include <bits/stdc++.h>
 using namespace std;

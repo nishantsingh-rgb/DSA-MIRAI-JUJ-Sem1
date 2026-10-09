@@ -8,6 +8,8 @@ C++ course material — theory + classwork/homework code, organized by topic:
 - `04_Switch_Case`
 - `05_Loops`
 - `06_Patterns`
+- `07_Time_Complexity`
+- `08_Functions`
 
 Each topic folder has a content PDF (theory + solved problems) and a `Codes/` folder with the matching `.cpp` files.
 

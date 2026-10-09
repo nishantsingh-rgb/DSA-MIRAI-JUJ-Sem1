@@ -75,6 +75,8 @@ export interface Param {
   type: TypeSpec;
   name: string;
   isArray: boolean;
+  /** default argument: int power(int b, int e = 2) */
+  def: Expr | null;
 }
 
 export interface FuncDecl {

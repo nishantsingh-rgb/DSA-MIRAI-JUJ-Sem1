@@ -143,6 +143,7 @@ class Parser {
   program(): Program {
     const functions = new Map<string, FuncDecl>();
     const globals: (Stmt & { type: 'Decl' })[] = [];
+    const protoDefaults = new Map<string, (Expr | null)[]>();
     while (this.peek().kind !== 'eof') {
       if (this.eat('using')) {
         while (!this.is(';')) this.next();
@@ -168,12 +169,19 @@ class Parser {
                 while (!this.is(']')) this.next();
                 this.expect(']');
               }
-              params.push({ type: pt, name: pn, isArray });
+              const def = this.eat('=') ? this.assign() : null;
+              params.push({ type: pt, name: pn, isArray, def });
             } while (this.eat(','));
         }
         this.expect(')');
-        if (this.eat(';')) continue; // prototype
+        if (this.eat(';')) {
+          // prototype: remember its default arguments for the definition below
+          protoDefaults.set(name, params.map((p) => p.def));
+          continue;
+        }
         const body = this.block();
+        const fromProto = protoDefaults.get(name);
+        if (fromProto) params.forEach((p, i) => (p.def ??= fromProto[i] ?? null));
         functions.set(name, { name, ret: type, params, body, line: startTok.line });
       } else {
         globals.push(this.declRest(startTok, type));

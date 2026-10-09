@@ -1286,10 +1286,17 @@ class Interpreter {
 
   private callUser(fn: FuncDecl, e: Expr & { type: 'Call' }): Value {
     if (this.frames.length > 200) throw new RuntimeError('Too many function calls inside each other (stack overflow) — is a recursive function missing its stopping case?', e.line);
-    if (e.args.length !== fn.params.length) throw new RuntimeError(`\`${fn.name}\` needs ${fn.params.length} value(s) but got ${e.args.length}`, e.line);
-    const bound: { name: string; cell: Cell; ref?: string }[] = [];
+    const required = fn.params.filter((p) => !p.def).length;
+    if (e.args.length < required || e.args.length > fn.params.length)
+      throw new RuntimeError(`\`${fn.name}\` needs ${required === fn.params.length ? required : `${required} to ${fn.params.length}`} value(s) but got ${e.args.length}`, e.line);
+    const bound: { name: string; cell: Cell; ref?: string; isDefault?: boolean }[] = [];
     fn.params.forEach((p, i) => {
-      const a = e.args[i];
+      const a = e.args[i] ?? p.def!;
+      if (!e.args[i]) {
+        const v = this.convert(this.ev(a), p.type, e.line);
+        bound.push({ name: p.name, cell: newCell(p.name, p.type, cloneValue(v)), isDefault: true });
+        return;
+      }
       if (p.type.isRef || p.isArray) {
         const target = this.lv(a);
         bound.push({ name: p.name, cell: target.cell, ref: this.text(a) });
@@ -1313,7 +1320,7 @@ class Interpreter {
     }
     let result: Value = VOID;
     try {
-      this.emit(fn.line, 'call', `Call \`${this.text(e)}\` → jump into \`${fn.name}\` with ${bound.length ? bound.map((b) => `\`${b.name}\` = ${b.ref ? `\`${b.ref}\` (shared, not copied)` : `**${showValue(b.cell.value, this.fmt)}**`}`).join(', ') : 'nothing'}.`);
+      this.emit(fn.line, 'call', `Call \`${this.text(e)}\` → jump into \`${fn.name}\` with ${bound.length ? bound.map((b) => `\`${b.name}\` = ${b.ref ? `\`${b.ref}\` (shared, not copied)` : `**${showValue(b.cell.value, this.fmt)}**`}${b.isDefault ? ' (default value, nothing was passed)' : ''}`).join(', ') : 'nothing'}.`);
       const sig = this.execBlockBody(fn.body.body);
       if (sig?.s === 'return') result = sig.value;
       else if (fn.ret.base !== 'void') throw new RuntimeError(`\`${fn.name}\` finished without returning a value`, this.lineOf(fn.body.end - 1));
