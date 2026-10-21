@@ -38,5 +38,10 @@
     "title": "Functions",
     "tagline": "Give a piece of code a name and reuse it anywhere.",
     "blurb": "You learn to pack a job like checking for a prime, finding a factorial or reversing a number into its own named function, then call it whenever you need it. You see how values travel in through parameters and back out through return, and how small functions team up to solve bigger digit puzzles."
+  },
+  "09_Recursion": {
+    "title": "Recursion",
+    "tagline": "A function that solves a problem by calling a smaller copy of itself.",
+    "blurb": "You learn how a function can call itself, why every recursive function needs a base case, and how the call stack piles up and unwinds. You use it for factorial, fast power, Fibonacci, subsequences, binary search and the Tower of Hanoi, and learn to read a recursion tree to count how much work a recursive program does."
   }
 }

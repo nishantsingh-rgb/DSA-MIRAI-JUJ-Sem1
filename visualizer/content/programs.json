@@ -649,5 +649,95 @@
     "summary": "Checks whether numbers equal the sum of their digits raised to the digit count, then finds the largest digit.",
     "analogy": "Like a secret club where a number gets in only if its powered-up digits add back to itself.",
     "watchFor": "Watch 153 become 1 + 125 + 27 = 153, using countDigits and power together."
+  },
+  "09_Recursion/L1_Class_1_Factorial_recursively": {
+    "title": "Factorial recursively",
+    "summary": "Finds 5! by letting factorial call itself on a smaller number until it reaches 1.",
+    "analogy": "Like a stack of plates: each call is put on top and waits, and they are taken off in reverse order once the bottom one is ready.",
+    "watchFor": "Watch the call stack grow to five boxes, then shrink as each one multiplies and returns."
+  },
+  "09_Recursion/L1_Class_2_Print_1_N_and_N_1_recursively": {
+    "title": "Print 1..N and N..1 recursively",
+    "summary": "Prints 1 to 5 and 5 to 1 with two tiny recursive functions that differ only in where the print sits.",
+    "analogy": "Like walking down a staircase and back up: you can call out the step numbers on the way down or on the way back up.",
+    "watchFor": "Watch printIncreasing print nothing until the base case, then print on the way back up."
+  },
+  "09_Recursion/L1_Class_3_Sum_of_digits_recursively": {
+    "title": "Sum of digits recursively",
+    "summary": "Adds up the digits of a number as last digit plus the sum of the remaining digits.",
+    "analogy": "Like peeling a number from the right, one digit per call, and adding the peels back together.",
+    "watchFor": "Watch 98765 shrink to 9876, 987 ... 0, then the digits add up as the calls return."
+  },
+  "09_Recursion/L1_HW_1_Fast_power_a_b": {
+    "title": "Fast power a^b",
+    "summary": "Computes a to the power b by solving the half problem once and squaring it.",
+    "analogy": "Like folding paper: each fold halves the work, so 2^30 needs only six calls.",
+    "watchFor": "Watch the calls counter stay tiny even for 2^30."
+  },
+  "09_Recursion/L1_HW_2_Recursive_palindrome_check": {
+    "title": "Recursive palindrome check",
+    "summary": "Checks whether a word reads the same backwards by comparing the outer letters and recursing inward.",
+    "analogy": "Like two friends walking toward each other from both ends of a word, checking the letters match.",
+    "watchFor": "Watch left and right move toward the middle and stop early at the first mismatch in hello."
+  },
+  "09_Recursion/L2_Class_1_Nth_Fibonacci_number": {
+    "title": "Nth Fibonacci number",
+    "summary": "Draws the recursion tree for fib(4), then prints the first 10 Fibonacci numbers.",
+    "analogy": "Like a family tree where every person has two parents, so the number of calls doubles at each level.",
+    "watchFor": "Watch fib(2) get computed twice inside fib(4) - that repeated work is why naive Fibonacci is slow."
+  },
+  "09_Recursion/L2_Class_2_All_subsequences_of_a_string": {
+    "title": "All subsequences of a string",
+    "summary": "Prints all 8 subsequences of abc by choosing to take or skip each character.",
+    "analogy": "Like packing for a trip: for every item you decide yes or no, and every set of decisions is a different bag.",
+    "watchFor": "Watch current grow when a letter is taken and stay the same when it is skipped."
+  },
+  "09_Recursion/L2_Class_3_Sum_of_an_array_recursively": {
+    "title": "Sum of an array recursively",
+    "summary": "Adds an array as its last element plus the sum of the first n-1 elements.",
+    "analogy": "Like counting coins by taking the last one off the row and asking a friend to count the rest.",
+    "watchFor": "Watch n go 5, 4, 3, 2, 1, 0 and the sum build up on the way back."
+  },
+  "09_Recursion/L2_HW_1_Count_vowels_recursively": {
+    "title": "Count vowels recursively",
+    "summary": "Counts vowels in a sentence by checking one character per call and moving the index forward.",
+    "analogy": "Like a ticket checker moving down a queue, adding one to the count for every vowel.",
+    "watchFor": "Watch uppercase A get turned to lowercase before it is checked."
+  },
+  "09_Recursion/L2_HW_2_Reverse_a_string_recursively": {
+    "title": "Reverse a string recursively",
+    "summary": "Reverses strings two ways: by building a new string, and by swapping letters in place.",
+    "analogy": "Like flipping a row of cards by swapping the outer pair and then working inward.",
+    "watchFor": "Watch the reference parameter change word in main directly in the in-place version."
+  },
+  "09_Recursion/L3_Class_1_Check_if_an_array_is_sorted": {
+    "title": "Check if an array is sorted",
+    "summary": "Checks the last pair of an array and recurses on the rest to decide if it is sorted.",
+    "analogy": "Like checking a line of students by height from the back, stopping as soon as one pair is wrong.",
+    "watchFor": "Watch the second array fail on the pair 4 and 2."
+  },
+  "09_Recursion/L3_Class_2_Binary_search_recursively": {
+    "title": "Binary search recursively",
+    "summary": "Searches a sorted array by looking at the middle and recursing into only one half.",
+    "analogy": "Like guessing a number between 1 and 100 by always guessing the middle and hearing higher or lower.",
+    "watchFor": "Watch low and high close in until the range is empty for 7."
+  },
+  "09_Recursion/L3_Class_3_Tower_of_Hanoi": {
+    "title": "Tower of Hanoi",
+    "summary": "Solves Tower of Hanoi for 3 disks in 7 moves by moving n-1 disks out of the way first.",
+    "analogy": "Like moving a pile of books one at a time with a spare table, never putting a big book on a small one.",
+    "watchFor": "Watch the from, to and helper rods swap roles in each call."
+  },
+  "09_Recursion/L3_HW_1_Climbing_stairs_count_the_ways": {
+    "title": "Climbing stairs - count the ways",
+    "summary": "Counts how many ways you can climb n stairs taking 1 or 2 steps at a time.",
+    "analogy": "Like choosing your first step and letting the rest of the staircase be someone else's problem.",
+    "watchFor": "Watch the answers turn out to be Fibonacci numbers: 1, 2, 3, 5, 8, 13."
+  },
+  "09_Recursion/L3_HW_2_GCD_using_Euclid_s_algorithm": {
+    "title": "GCD using Euclid's algorithm",
+    "summary": "Finds the GCD with gcd(a, b) = gcd(b, a % b), then uses it to get the LCM.",
+    "analogy": "Like cutting the largest square tiles off a rectangle again and again until nothing is left over.",
+    "watchFor": "Watch the numbers shrink fast: gcd(48, 18) is done in four calls."
   }
 }
