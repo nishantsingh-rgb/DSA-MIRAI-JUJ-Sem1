@@ -1,9 +1,9 @@
-import type { BaseType, Declarator, Expr, FuncDecl, Param, Program, Stmt, SwitchLabel, TypeSpec } from './ast';
+import type { BaseType, Capture, Declarator, Expr, FieldDecl, FuncDecl, Param, Program, Stmt, SwitchLabel, TypeSpec } from './ast';
 import { CppSyntaxError, tokenize, type Token } from './lexer';
 
 const TYPE_WORDS = new Set([
   'int', 'long', 'short', 'double', 'float', 'char', 'bool', 'string', 'void', 'auto',
-  'unsigned', 'signed', 'const', 'vector', 'size_t', 'static', 'constexpr',
+  'unsigned', 'signed', 'const', 'vector', 'size_t', 'static', 'constexpr', 'pair', 'struct',
 ]);
 
 const BINARY_PREC: Record<string, number> = {
@@ -35,6 +35,8 @@ export function parse(src: string): Program {
 
 class Parser {
   private p = 0;
+  /** struct types (and `using` / `typedef` aliases) declared so far, by name */
+  private structs = new Map<string, TypeSpec>();
   constructor(private toks: Token[], private src: string) {}
 
   // ---------- helpers ----------
@@ -79,6 +81,7 @@ class Parser {
 
   private isTypeStart(o = 0): boolean {
     const t = this.peek(o);
+    if (t.kind === 'ident' && this.structs.has(t.text)) return true;
     if (t.kind !== 'ident' || !TYPE_WORDS.has(t.text)) return false;
     // `int(x)` / `char('A' + 1)` are functional casts, not declarations.
     if (['int', 'char', 'double', 'float', 'bool', 'long', 'string'].includes(t.text) && this.is('(', o + 1)) return false;
@@ -92,6 +95,7 @@ class Parser {
     let longs = 0;
     let base: BaseType | null = null;
     let elem: TypeSpec | undefined;
+    let struct: TypeSpec | undefined;
     for (;;) {
       const t = this.peek();
       if (t.kind !== 'ident') break;
@@ -114,14 +118,31 @@ class Parser {
         this.next();
         this.expect('<', 'after vector');
         elem = this.type();
-        // `>>` closes nested templates: vector<vector<int>>
-        if (this.is('>>')) {
-          const t2 = this.peek();
-          this.toks.splice(this.p, 1, { ...t2, text: '>', end: t2.start + 1 }, { ...t2, text: '>', start: t2.start + 1 });
-        }
-        this.expect('>', 'to close vector<...>');
+        this.closeAngle('vector');
         base = 'vector';
         continue;
+      } else if (base === null && w === 'pair') {
+        this.next();
+        this.expect('<', 'after pair');
+        const first = this.type();
+        this.expect(',', 'between the two types of pair<..., ...>');
+        const second = this.type();
+        this.closeAngle('pair');
+        struct = {
+          base: 'struct',
+          name: 'pair',
+          fields: [
+            { name: 'first', type: first, init: null },
+            { name: 'second', type: second, init: null },
+          ],
+        };
+        base = 'struct';
+        continue;
+      } else if (w === 'struct' && this.structs.has(this.peek(1).text)) {
+        /* `struct Student s;` — the keyword is optional */
+      } else if (base === null && this.structs.has(w)) {
+        struct = this.structs.get(w)!;
+        base = struct.base;
       } else break;
       this.next();
     }
@@ -136,7 +157,44 @@ class Parser {
     // NB: `long` alone is 64-bit on Linux/macOS, which is what the course machines use.
     let isRef = false;
     if (this.eat('&')) isRef = true;
+    if (struct) return { ...struct, isConst, isRef };
     return { base, elem, isConst, isRef };
+  }
+
+  /** Expect the `>` that closes a template, splitting `>>` (vector<pair<int,int>>). */
+  private closeAngle(what: string) {
+    if (this.is('>>')) {
+      const t2 = this.peek();
+      this.toks.splice(this.p, 1, { ...t2, text: '>', end: t2.start + 1 }, { ...t2, text: '>', start: t2.start + 1 });
+    }
+    this.expect('>', `to close ${what}<...>`);
+  }
+
+  /** struct Name { type a; type b, c; }; */
+  private isStructDef(): boolean {
+    return this.is('struct') && this.peek(1).kind === 'ident' && this.is('{', 2);
+  }
+  private structDef() {
+    this.expect('struct');
+    const name = this.ident().text;
+    const fields: FieldDecl[] = [];
+    const spec: TypeSpec = { base: 'struct', name, fields };
+    this.structs.set(name, spec);
+    this.expect('{');
+    while (!this.is('}')) {
+      const ft = this.type();
+      do {
+        const fn = this.ident();
+        if (this.is('(')) throw new CppSyntaxError('Functions inside a struct are not supported by the visualizer yet', fn.line);
+        let init: Expr | null = null;
+        if (this.eat('=')) init = this.is('{') ? this.initList() : this.assign();
+        else if (this.is('{')) init = this.initList();
+        fields.push({ name: fn.text, type: ft, init });
+      } while (this.eat(','));
+      this.expect(';', 'after the struct member');
+    }
+    this.expect('}');
+    this.expect(';', 'after the struct definition (a struct ends with "};")');
   }
 
   // ---------- program ----------
@@ -146,11 +204,29 @@ class Parser {
     const protoDefaults = new Map<string, (Expr | null)[]>();
     while (this.peek().kind !== 'eof') {
       if (this.eat('using')) {
+        // using pii = pair<int, int>;  (using namespace std; is ignored)
+        if (this.peek().kind === 'ident' && this.is('=', 1)) {
+          const name = this.next().text;
+          this.next();
+          this.structs.set(name, this.type());
+          this.expect(';');
+          continue;
+        }
         while (!this.is(';')) this.next();
         this.next();
         continue;
       }
+      if (this.eat('typedef')) {
+        const t = this.type();
+        this.structs.set(this.ident().text, t);
+        this.expect(';');
+        continue;
+      }
       if (this.eat(';')) continue;
+      if (this.isStructDef()) {
+        this.structDef();
+        continue;
+      }
       const startTok = this.peek();
       const type = this.type();
       if (this.peek().kind === 'ident' && this.is('(', 1)) {
@@ -206,7 +282,9 @@ class Parser {
   private declRest(startTok: Token, varType: TypeSpec): Stmt & { type: 'Decl' } {
     const decls: Declarator[] = [];
     do {
-      const nt = this.ident();
+      let bind: string[] | undefined;
+      if (this.is('[')) bind = this.bindList();
+      const nt = bind ? this.toks[this.p - 1] : this.ident();
       const dims: (Expr | null)[] = [];
       while (this.eat('[')) {
         dims.push(this.is(']') ? null : this.expr());
@@ -223,10 +301,20 @@ class Parser {
         if (!this.is(')')) do ctorArgs.push(this.assign()); while (this.eat(','));
         this.expect(')');
       }
-      decls.push({ name: nt.text, dims, init, ctorArgs, line: nt.line, start: nt.start, end: this.prevEnd() });
+      decls.push({ name: bind ? `[${bind.join(', ')}]` : nt.text, dims, init, ctorArgs, bind, line: nt.line, start: nt.start, end: this.prevEnd() });
     } while (this.eat(','));
     this.expect(';', 'at the end of the declaration');
     return this.node(startTok, { type: 'Decl' as const, varType, decls });
+  }
+
+  /** [a, b] of a structured binding */
+  private bindList(): string[] {
+    this.expect('[');
+    const names: string[] = [];
+    do names.push(this.ident().text);
+    while (this.eat(','));
+    this.expect(']', 'to close the [a, b] names');
+    return names;
   }
 
   private initList(): Expr {
@@ -265,14 +353,20 @@ class Parser {
       if (this.isTypeStart()) {
         const save = this.p;
         const vt = this.type();
-        if (this.peek().kind === 'ident' && this.is(':', 1)) {
-          const name = this.next().text;
+        let bind: string[] | undefined;
+        if (this.is('[')) {
+          bind = this.bindList();
+          this.p--; // re-read "]" as the loop variable's "name" token below
+        }
+        if ((this.peek().kind === 'ident' || bind) && this.is(':', 1)) {
+          this.next();
+          const name = bind ? `[${bind.join(', ')}]` : this.toks[this.p - 1].text;
           this.next();
           const range = this.expr();
           this.expect(')');
           const head = this.prevEnd();
           const body = this.statement();
-          return { type: 'ForRange', varType: vt, name, range, body, id: ++loopIds, line: t.line, start: t.start, end: head };
+          return { type: 'ForRange', varType: vt, name, bind, range, body, id: ++loopIds, line: t.line, start: t.start, end: head };
         }
         this.p = save;
       }
@@ -354,6 +448,10 @@ class Parser {
       return this.node(t, { type: 'Return' as const, value });
     }
 
+    if (this.isStructDef()) {
+      this.structDef();
+      return this.node(t, { type: 'Empty' as const });
+    }
     if (this.isTypeStart()) {
       return this.declRest(t, this.type());
     }
@@ -384,7 +482,7 @@ class Parser {
     if (t.kind === 'op' && ASSIGN_OPS.has(t.text)) {
       this.next();
       const value = this.is('{') ? this.initList() : this.assign();
-      if (!['Ident', 'Index'].includes(left.type))
+      if (!['Ident', 'Index', 'Member', 'Unary'].includes(left.type))
         throw new CppSyntaxError(`Can't assign to "${this.src.slice(left.start, left.end)}"`, t.line);
       return this.node(s, { type: 'Assign' as const, op: t.text, target: left, value });
     }
@@ -419,7 +517,7 @@ class Parser {
 
   private unary(): Expr {
     const t = this.peek();
-    if (t.kind === 'op' && ['!', '-', '+', '~'].includes(t.text)) {
+    if (t.kind === 'op' && ['!', '-', '+', '~', '*'].includes(t.text)) {
       this.next();
       const arg = this.unary();
       return this.node(t, { type: 'Unary' as const, op: t.text, arg });
@@ -469,11 +567,13 @@ class Parser {
       } else if (this.is('.')) {
         this.next();
         const name = this.ident().text;
-        const args: Expr[] = [];
-        if (this.eat('(')) {
-          if (!this.is(')')) do args.push(this.assign()); while (this.eat(','));
-          this.expect(')');
+        if (!this.eat('(')) {
+          e = this.node(s, { type: 'Member' as const, obj: e, name });
+          continue;
         }
+        const args: Expr[] = [];
+        if (!this.is(')')) do args.push(this.assign()); while (this.eat(','));
+        this.expect(')');
         e = this.node(s, { type: 'Method' as const, obj: e, name, args });
       } else if (this.is('++') || this.is('--')) {
         const op = this.next().text as '++' | '--';
@@ -506,7 +606,18 @@ class Parser {
       return { ...e, start: t.start, end: this.prevEnd() };
     }
     if (this.is('{')) return this.initList();
+    if (this.is('[')) return this.lambda();
     if (t.kind === 'ident') {
+      // greater<int>()  /  greater<>()  /  less<int>()
+      if ((t.text === 'greater' || t.text === 'less') && this.is('<', 1) && (this.is('>', 2) || this.isTypeStart(2))) {
+        this.next();
+        this.next();
+        if (!this.is('>') && !this.is('>>')) this.type();
+        this.closeAngle(t.text);
+        this.expect('(');
+        this.expect(')');
+        return this.node(t, { type: 'Functor' as const, name: t.text });
+      }
       if (t.text === 'true' || t.text === 'false') {
         this.next();
         return this.node(t, { type: 'Bool' as const, value: t.text === 'true' });
@@ -540,5 +651,40 @@ class Parser {
       return this.node(t, { type: 'Ident' as const, name: t.text });
     }
     throw new CppSyntaxError(`Unexpected "${t.text || 'end of file'}"`, t.line);
+  }
+
+  /** [captures](params) -> ret { body } */
+  private lambda(): Expr {
+    const s = this.expect('[');
+    const capture: Capture = { all: null, names: [] };
+    while (!this.is(']')) {
+      if (this.is('&') && this.peek(1).kind !== 'ident') {
+        this.next();
+        capture.all = 'ref';
+      } else if (this.eat('=')) {
+        capture.all = 'val';
+      } else {
+        const byRef = this.eat('&');
+        capture.names.push({ name: this.ident().text, byRef });
+      }
+      if (!this.eat(',')) break;
+    }
+    this.expect(']', 'to close the lambda capture list');
+    const params: Param[] = [];
+    if (this.eat('(')) {
+      if (!this.is(')'))
+        do {
+          const pt = this.type();
+          const pn = this.ident().text;
+          params.push({ type: pt, name: pn, isArray: false, def: null });
+        } while (this.eat(','));
+      this.expect(')', 'to close the lambda parameters');
+    }
+    this.eat('mutable');
+    let ret: TypeSpec = { base: 'auto' };
+    if (this.eat('->')) ret = this.type();
+    const body = this.block();
+    const fn: FuncDecl = { name: 'lambda', ret, params, body, line: s.line };
+    return this.node(s, { type: 'Lambda' as const, fn, capture });
   }
 }

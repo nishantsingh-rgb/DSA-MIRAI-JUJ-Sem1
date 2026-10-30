@@ -2,12 +2,29 @@
 
 export type BaseType =
   | 'int' | 'll' | 'uint' | 'ull' | 'short' | 'double' | 'float' | 'char' | 'bool'
-  | 'string' | 'void' | 'auto' | 'vector';
+  | 'string' | 'void' | 'auto' | 'vector'
+  /** pair<A, B> and user structs (a pair is a struct named "pair" with fields first/second) */
+  | 'struct'
+  /** an iterator such as v.begin() */
+  | 'iter'
+  /** a lambda, a function name, or greater<int>() */
+  | 'func';
+
+export interface FieldDecl {
+  name: string;
+  type: TypeSpec;
+  /** default member initializer: int qty = 0; */
+  init: Expr | null;
+}
 
 export interface TypeSpec {
   base: BaseType;
   /** element type for vector<T> */
   elem?: TypeSpec;
+  /** struct name ("pair" for pair<A, B>) */
+  name?: string;
+  /** struct members, in declaration order */
+  fields?: FieldDecl[];
   isConst?: boolean;
   isRef?: boolean;
 }
@@ -31,6 +48,9 @@ export type Expr =
   | (NodeBase & { type: 'Ternary'; test: Expr; then: Expr; else: Expr })
   | (NodeBase & { type: 'Call'; callee: string; args: Expr[] })
   | (NodeBase & { type: 'Method'; obj: Expr; name: string; args: Expr[] })
+  | (NodeBase & { type: 'Member'; obj: Expr; name: string })
+  | (NodeBase & { type: 'Lambda'; fn: FuncDecl; capture: Capture })
+  | (NodeBase & { type: 'Functor'; name: 'greater' | 'less' })
   | (NodeBase & { type: 'Index'; obj: Expr; index: Expr })
   | (NodeBase & { type: 'Cast'; to: TypeSpec; arg: Expr })
   | (NodeBase & { type: 'Sizeof'; of: TypeSpec | null; arg: Expr | null })
@@ -43,6 +63,8 @@ export interface Declarator {
   init: Expr | null;
   /** constructor-style args: vector<int> v(5, 0) */
   ctorArgs: Expr[] | null;
+  /** structured binding: auto [a, b] = p; */
+  bind?: string[];
   line: number;
   start: number;
   end: number;
@@ -54,7 +76,7 @@ export type Stmt =
   | (NodeBase & { type: 'ExprStmt'; expr: Expr })
   | (NodeBase & { type: 'If'; test: Expr; then: Stmt; else: Stmt | null; elseLine: number })
   | (NodeBase & { type: 'For'; init: Stmt | null; test: Expr | null; update: Expr | null; body: Stmt; id: number })
-  | (NodeBase & { type: 'ForRange'; varType: TypeSpec; name: string; range: Expr; body: Stmt; id: number })
+  | (NodeBase & { type: 'ForRange'; varType: TypeSpec; name: string; bind?: string[]; range: Expr; body: Stmt; id: number })
   | (NodeBase & { type: 'While'; test: Expr; body: Stmt; id: number })
   | (NodeBase & { type: 'DoWhile'; test: Expr; body: Stmt; id: number; testLine: number })
   | (NodeBase & { type: 'Switch'; disc: Expr; body: Stmt[]; labels: SwitchLabel[] })
@@ -85,6 +107,12 @@ export interface FuncDecl {
   params: Param[];
   body: Stmt & { type: 'Block' };
   line: number;
+}
+
+/** what a lambda captures: [] / [&] / [=] / [&x, y] */
+export interface Capture {
+  all: 'ref' | 'val' | null;
+  names: { name: string; byRef: boolean }[];
 }
 
 export interface Program {

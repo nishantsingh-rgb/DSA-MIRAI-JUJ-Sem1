@@ -11,6 +11,9 @@ C++ course material — theory + classwork/homework code, organized by topic:
 - `07_Time_Complexity`
 - `08_Functions`
 - `09_Recursion`
+- `10_Arrays`
+- `11_Sorting`
+- `12_Searching`
 
 Each topic folder has a content PDF (theory + solved problems) and a `Codes/` folder with the matching `.cpp` files.
 

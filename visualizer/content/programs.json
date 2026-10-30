@@ -739,5 +739,216 @@
     "summary": "Finds the GCD with gcd(a, b) = gcd(b, a % b), then uses it to get the LCM.",
     "analogy": "Like cutting the largest square tiles off a rectangle again and again until nothing is left over.",
     "watchFor": "Watch the numbers shrink fast: gcd(48, 18) is done in four calls."
+  },
+  "10_Arrays/L1_Class_1_Read_N_values_and_print_them": {
+    "title": "Read N values and print them",
+    "summary": "Asks how many values are coming, reads them into a vector, then prints them back.",
+    "analogy": "Like a row of numbered lockers: you first decide how many lockers to build, then put one item in each.",
+    "watchFor": "Watch arr fill up box by box as each typed number lands in arr[i].",
+    "input": "5\n12 7 25 3 18"
+  },
+  "10_Arrays/L1_Class_2_Print_in_reverse_order_by_index": {
+    "title": "Print in reverse order by index",
+    "summary": "Prints a vector forwards, then backwards by counting the index down from n - 1 to 0.",
+    "analogy": "Like reading the names on a class register from the last roll number up to the first.",
+    "watchFor": "Watch i start at 4, the LAST index, and stop after 0."
+  },
+  "10_Arrays/L1_Class_3_Print_elements_at_even_indices": {
+    "title": "Print elements at even indices",
+    "summary": "Prints only the elements at positions 0, 2, 4, 6, then the ones at the odd positions.",
+    "analogy": "Like taking every second step on a staircase.",
+    "watchFor": "Watch i jump by 2 each time instead of 1."
+  },
+  "10_Arrays/L1_HW_1_Sum_of_an_array": {
+    "title": "Sum of an array",
+    "summary": "Adds up every element of a vector and shows the running total after each one.",
+    "analogy": "Like a cashier adding up the prices of the items in your basket one by one.",
+    "watchFor": "Watch sum grow by exactly arr[i] on every turn of the loop."
+  },
+  "10_Arrays/L1_HW_2_Count_positive_elements": {
+    "title": "Count positive elements",
+    "summary": "Counts how many numbers in a vector are greater than zero.",
+    "analogy": "Like counting how many days in a month were above freezing.",
+    "watchFor": "Watch count stay the same for the zeros: 0 is not positive."
+  },
+  "10_Arrays/L2_Class_1_Max_and_min_in_one_pass": {
+    "title": "Max and min in one pass",
+    "summary": "Finds the largest and smallest values and where they are, in a single walk through the vector.",
+    "analogy": "Like scanning a class photo once and spotting both the tallest and the shortest student.",
+    "watchFor": "Watch mx and mn both start as arr[0] and only change when a new record is found."
+  },
+  "10_Arrays/L2_Class_2_Average_of_the_array": {
+    "title": "Average of the array",
+    "summary": "Adds up five marks and shows why sum / n with ints gives the wrong average.",
+    "analogy": "Like sharing 389 sweets among 5 friends: integer division hides the leftover part.",
+    "watchFor": "Compare 77 from integer division with 77.80 after converting to double."
+  },
+  "10_Arrays/L2_Class_3_Count_elements_above_the_average": {
+    "title": "Count elements above the average",
+    "summary": "Finds the average in a first pass, then counts the elements bigger than it in a second pass.",
+    "analogy": "Like checking who scored above the class average: you need the average before you can compare.",
+    "watchFor": "Watch the program go through the array twice: once to add, once to compare."
+  },
+  "10_Arrays/L2_HW_1_Second_largest_element": {
+    "title": "Second largest element",
+    "summary": "Finds the largest and the second largest distinct values in one pass.",
+    "analogy": "Like a race where every new winner pushes the old winner down to second place.",
+    "watchFor": "Watch the second 35 get ignored, so 34 stays as the second largest."
+  },
+  "10_Arrays/L2_HW_2_Count_even_and_odd": {
+    "title": "Count even and odd",
+    "summary": "Counts how many even and how many odd numbers a vector has.",
+    "analogy": "Like sorting socks into two piles and counting each pile.",
+    "watchFor": "Watch exactly one of evens or odds go up for every number."
+  },
+  "11_Sorting/L1_Class_1_Bubble_sort_implementation": {
+    "title": "Bubble sort implementation",
+    "summary": "Sorts by swapping neighbours that are out of order, and stops early once a pass makes no swaps.",
+    "analogy": "Like bubbles in a fizzy drink: the biggest one rises to the top first.",
+    "watchFor": "Watch the already sorted array finish after just one pass."
+  },
+  "11_Sorting/L1_Class_2_Selection_sort_implementation": {
+    "title": "Selection sort implementation",
+    "summary": "Each pass finds the smallest remaining value and swaps it to the front of the unsorted part.",
+    "analogy": "Like picking the shortest student from the line again and again and placing them at the front.",
+    "watchFor": "Watch minIdx move during the scan, and only ONE swap happen per pass."
+  },
+  "11_Sorting/L1_Class_3_Trace_selection_sort_on_paper": {
+    "title": "Trace selection sort on paper",
+    "summary": "Prints the sorted and unsorted parts with a bar between them after each selection sort pass.",
+    "analogy": "Like a teacher drawing a line on the board between the cards already placed and the ones still to sort.",
+    "watchFor": "Watch the bar move one step right after every pass."
+  },
+  "11_Sorting/L1_HW_1_Count_total_swaps_in_bubble_sort": {
+    "title": "Count total swaps in bubble sort",
+    "summary": "Counts comparisons and swaps made by bubble sort on three different arrays.",
+    "analogy": "Like counting how many times two people in a queue had to swap places.",
+    "watchFor": "Watch the reversed array need the most swaps and the sorted one need none."
+  },
+  "11_Sorting/L1_HW_2_Sort_an_array_in_descending_order": {
+    "title": "Sort an array in descending order",
+    "summary": "Bubble sort with the comparison flipped, so bigger numbers move to the front.",
+    "analogy": "Like ranking scores from the highest down to the lowest.",
+    "watchFor": "Watch the single < in the if decide the whole order."
+  },
+  "11_Sorting/L2_Class_1_Insertion_sort_implementation": {
+    "title": "Insertion sort implementation",
+    "summary": "Picks each element and slides it left into its place in the sorted part.",
+    "analogy": "Like sorting playing cards in your hand, one new card at a time.",
+    "watchFor": "Watch key get saved before the bigger elements shift right over its old box."
+  },
+  "11_Sorting/L2_Class_2_Trace_insertion_sort_shifts": {
+    "title": "Trace insertion sort shifts",
+    "summary": "Prints every shift insertion sort makes and counts the total.",
+    "analogy": "Like people in a cinema row shuffling one seat right to let someone in.",
+    "watchFor": "Watch key 1 make four shifts while key 6 makes none."
+  },
+  "11_Sorting/L2_Class_3_Compare_stability_of_Bubble_vs_Selection": {
+    "title": "Compare stability of Bubble vs Selection",
+    "summary": "Sorts the same tagged items with bubble and selection sort to see which keeps equal keys in order.",
+    "analogy": "Like two students with the same marks: a fair ranking keeps whoever was listed first, first.",
+    "watchFor": "Watch selection sort swap 4a far to the right, past 4b."
+  },
+  "11_Sorting/L2_HW_1_Sort_an_array_of_strings_by_first_letter": {
+    "title": "Sort strings by first letter",
+    "summary": "Insertion sorts a list of words by their first letter only.",
+    "analogy": "Like filing names in a register by their first letter.",
+    "watchFor": "Watch apple stay before avocado because insertion sort is stable."
+  },
+  "11_Sorting/L2_HW_2_Find_median_after_sorting": {
+    "title": "Find median after sorting",
+    "summary": "Sorts a copy of the array and finds the middle value, or the average of the two middles.",
+    "analogy": "Like lining people up by height to find the one standing exactly in the middle.",
+    "watchFor": "Watch the even-sized array average its two middle values, 4 and 7."
+  },
+  "11_Sorting/L3_Class_1_Sort_a_vector_ascending_descending": {
+    "title": "Sort ascending / descending with std::sort",
+    "summary": "Uses std::sort for ascending order, greater<int>() and a lambda for other orders, and sorts a plain array.",
+    "analogy": "Like handing your list to a machine and only telling it which way round you want it.",
+    "watchFor": "Watch one line of sort replace a whole hand-written sorting loop."
+  },
+  "11_Sorting/L3_Class_2_Sort_vector_of_pairs_by_the_second_value": {
+    "title": "Sort pairs by the second value",
+    "summary": "Sorts (name, marks) pairs by name by default, then by marks with a lambda, and does the same with a struct.",
+    "analogy": "Like the same class list sorted alphabetically for attendance and by marks for the results board.",
+    "watchFor": "Watch the default sort use the name, and the lambda switch it to the marks."
+  },
+  "11_Sorting/L3_Class_3_Sort_strings_by_length": {
+    "title": "Sort strings by length",
+    "summary": "Sorts words shortest first, breaking ties alphabetically with a named comparator function.",
+    "analogy": "Like lining up words for a spelling bee from the easiest (shortest) to the hardest.",
+    "watchFor": "Watch kiwi come before plum: same length, so alphabetical order decides."
+  },
+  "11_Sorting/L3_HW_1_LC56_Merge_Intervals_sort_by_start_time": {
+    "title": "LC56 Merge Intervals",
+    "summary": "Sorts intervals by start time, then merges any that overlap.",
+    "analogy": "Like combining overlapping meetings in a calendar into single busy blocks.",
+    "watchFor": "Watch [8, 10] and [9, 12] join into [8, 12] once they sit next to each other."
+  },
+  "11_Sorting/L3_HW_2_Sort_array_elements_by_frequency": {
+    "title": "Sort elements by frequency",
+    "summary": "Counts each value, then sorts with a lambda so the most frequent values come first.",
+    "analogy": "Like a playlist ordered by how many times each song was played.",
+    "watchFor": "Watch the [&] lambda read freq to decide which number goes first."
+  },
+  "12_Searching/L1_Class_1_Linear_search_return_the_index": {
+    "title": "Linear search - return the index",
+    "summary": "Checks the elements one by one and returns the index of the target, or -1 if it is missing.",
+    "analogy": "Like looking for your friend in a queue by checking each face from the front.",
+    "watchFor": "Watch the search for 50 check every element before giving up with -1."
+  },
+  "12_Searching/L1_Class_2_Count_occurrences_of_x": {
+    "title": "Count occurrences of x",
+    "summary": "Walks through the whole array and counts how many elements equal x.",
+    "analogy": "Like counting how many times a word appears in a sentence.",
+    "watchFor": "Watch the loop keep going after a match instead of stopping."
+  },
+  "12_Searching/L1_Class_3_First_and_last_index_of_x": {
+    "title": "First and last index of x",
+    "summary": "Finds the first and last positions of x in one pass.",
+    "analogy": "Like noting the first and last page where a name appears in a book.",
+    "watchFor": "Watch first get set only once while last moves on every match."
+  },
+  "12_Searching/L1_HW_1_Check_if_a_value_exists_boolean": {
+    "title": "Check if a value exists",
+    "summary": "A function returns true as soon as it finds the value, and false only after checking everything.",
+    "analogy": "Like asking \"is anyone here called Asha?\" and stopping at the first yes.",
+    "watchFor": "Watch return false wait until after the loop."
+  },
+  "12_Searching/L1_HW_2_Return_index_of_the_maximum_element": {
+    "title": "Index of the maximum element",
+    "summary": "Keeps the index of the biggest value seen so far and returns it.",
+    "analogy": "Like remembering which seat the tallest person is sitting in.",
+    "watchFor": "Watch the second 67 NOT replace the first, because the test is > and not >=."
+  },
+  "12_Searching/L2_Class_1_LC704_Binary_Search": {
+    "title": "LC704 Binary Search",
+    "summary": "Searches a sorted array by checking the middle and throwing away half each time.",
+    "analogy": "Like finding a word in a dictionary by opening it in the middle and going left or right.",
+    "watchFor": "Watch low and high close in on the target, halving the range every step."
+  },
+  "12_Searching/L2_Class_2_LC35_Search_Insert_Position": {
+    "title": "LC35 Search Insert Position",
+    "summary": "Returns where the target is, or where it would be inserted, and checks it against lower_bound.",
+    "analogy": "Like finding the right gap on a bookshelf to slide in a new book in order.",
+    "watchFor": "Watch low end up exactly at the insert position when the target is missing."
+  },
+  "12_Searching/L2_Class_3_First_occurrence_using_binary_search": {
+    "title": "First occurrence using binary search",
+    "summary": "Binary search that keeps going left after a match to find the first copy of x.",
+    "analogy": "Like finding the first page of a chapter: when you land inside it, flip back.",
+    "watchFor": "Watch ans get saved and then high move left of mid."
+  },
+  "12_Searching/L2_HW_1_LC34_First_and_Last_Position_of_Element": {
+    "title": "LC34 First and Last Position",
+    "summary": "Runs binary search twice, once leaning left and once leaning right, then checks with lower_bound and upper_bound.",
+    "analogy": "Like finding where a row of identical books starts and ends on a sorted shelf.",
+    "watchFor": "Watch the same function find both ends just by changing goLeft."
+  },
+  "12_Searching/L2_HW_2_Find_Ceil_of_x_in_sorted_array": {
+    "title": "Find ceil of x",
+    "summary": "Binary search for the smallest element that is greater than or equal to x.",
+    "analogy": "Like finding the smallest shoe size that still fits you.",
+    "watchFor": "Watch ceil(20) find no candidate, so the answer stays -1."
   }
 }

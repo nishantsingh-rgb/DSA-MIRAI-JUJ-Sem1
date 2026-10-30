@@ -1,4 +1,4 @@
-import type { Expr, FuncDecl, Program, Stmt, TypeSpec } from './ast';
+import type { Expr, FieldDecl, FuncDecl, Program, Stmt, TypeSpec } from './ast';
 import type { Access, ConsoleSeg, EvalLine, FrameSnap, LoopSnap, SnapVal, Step, StepKind, Trace, VarSnap } from './trace';
 import {
   RuntimeError,
@@ -16,6 +16,7 @@ import {
   promote,
   showValue,
   sizeOf,
+  type IterRef,
   typeMeaning,
   typeName,
   type Cell,
@@ -46,6 +47,26 @@ interface Frame {
   label: string;
   scopes: Map<string, Cell>[];
   refs: Map<string, string>;
+  /** the function (or lambda) running in this frame */
+  decl?: FuncDecl;
+  /** variables a lambda captured from where it was written (looked up, but not drawn) */
+  captured?: Map<string, Cell>[];
+}
+
+type FnValue = Value & { k: 'fn' };
+type IterValue = Value & { k: 'iter' };
+
+/** a slice [b, e) of an array / vector / string, as given to sort(), find(), ... */
+interface Range {
+  ref: IterRef;
+  b: number;
+  e: number;
+}
+
+/** how a comparator was used during one algorithm call (for narration) */
+interface CmpStats {
+  name: string;
+  count: number;
 }
 
 interface LoopState {
@@ -133,6 +154,10 @@ class Interpreter {
   private maxSteps: number;
   private frameIds = 0;
   private lineStarts: number[] = [];
+  /** >0 while running comparator calls inside sort() etc. — their steps are not recorded */
+  private quiet = 0;
+  private quietSteps = 0;
+  private lastCmp: CmpStats | null = null;
 
   // collectors for the statement currently being narrated
   private evals: EvalLine[] = [];
@@ -158,7 +183,7 @@ class Interpreter {
       this.frames.push({ id: ++this.frameIds, fn: '(global)', label: 'global', scopes: [this.globals], refs: new Map() });
       for (const g of this.prog.globals) this.exec(g);
       this.frames.pop();
-      this.pushFrame('main', 'main()');
+      this.pushFrame('main', 'main()', main);
       this.emit(main.line, 'start', 'The program starts running from `main()` — the front door of every C++ program.');
       const sig = this.execBlockBody(main.body.body);
       if (!(sig && sig.s === 'return')) {
@@ -209,14 +234,20 @@ class Interpreter {
   private get frame(): Frame {
     return this.frames[this.frames.length - 1];
   }
-  private pushFrame(fn: string, label: string) {
-    this.frames.push({ id: ++this.frameIds, fn, label, scopes: [new Map()], refs: new Map() });
+  private pushFrame(fn: string, label: string, decl?: FuncDecl, captured?: Map<string, Cell>[]) {
+    this.frames.push({ id: ++this.frameIds, fn, label, scopes: [new Map()], refs: new Map(), decl, captured });
   }
   private lookup(name: string): Cell | null {
     const f = this.frame;
     for (let i = f.scopes.length - 1; i >= 0; i--) {
       const c = f.scopes[i].get(name);
       if (c) return c;
+    }
+    if (f.captured) {
+      for (let i = f.captured.length - 1; i >= 0; i--) {
+        const c = f.captured[i].get(name);
+        if (c) return c;
+      }
     }
     return this.globals.get(name) ?? null;
   }
@@ -234,6 +265,12 @@ class Interpreter {
   }
 
   private emit(line: number, kind: StepKind, text: string, extra: Partial<Step> = {}, endLine = line) {
+    if (this.quiet) {
+      // inside a comparator called by sort(): run it, but don't record every step
+      if (++this.quietSteps > this.maxSteps * 100) throw new StepLimit();
+      this.resetCollectors();
+      return;
+    }
     if (this.steps.length >= this.maxSteps) throw new StepLimit();
     this.forceEmit(line, kind, text, extra, endLine);
   }
@@ -273,7 +310,7 @@ class Interpreter {
 
   // ---------- snapshots ----------
   private snapVal(c: Cell, depth = 0): SnapVal {
-    if (!c.init && c.value.k !== 'arr') return { k: 'uninit' };
+    if (!c.init && c.value.k !== 'arr' && c.value.k !== 'struct') return { k: 'uninit' };
     const v = c.value;
     if (v.k === 'arr') {
       const items = v.items.slice(0, 64).map((it) => ({ id: it.id, v: depth > 2 ? { k: 'v' as const, text: '…', t: '' } : this.snapVal(it, depth + 1) }));
@@ -390,10 +427,10 @@ class Interpreter {
         return { s: 'continue' };
       case 'Return': {
         const fnName = this.frame.fn;
-        const fn = this.prog.functions.get(fnName);
+        const fn = this.frame.decl;
         let value: Value = VOID;
         if (s.value) {
-          value = this.ev(s.value);
+          value = this.ev(s.value, fn?.ret);
           if (fn && fn.ret.base !== 'void' && fn.ret.base !== 'auto') value = this.convert(value, fn.ret, s.line);
         }
         const endLine = this.lineOf(s.end - 1);
@@ -430,11 +467,16 @@ class Interpreter {
 
   private execDecl(s: Stmt & { type: 'Decl' }, quietPrefix?: string) {
     const parts: string[] = [];
+    let shownType = s.varType;
     for (const d of s.decls) {
       let t: TypeSpec = { ...s.varType };
       let value: Value;
       let init = true;
       let phrase: string;
+      if (d.bind && d.init) {
+        parts.push(this.bindNames(d.bind, d.init, t, d.line));
+        continue;
+      }
       if (d.dims.length) {
         const dims = d.dims.map((x) => (x ? this.toInt(this.ev(x), d.line) : -1));
         if (dims[0] === -1) dims[0] = d.init?.type === 'InitList' ? d.init.items.length : d.init?.type === 'Str' ? d.init.value.length + 1 : 0;
@@ -450,7 +492,7 @@ class Interpreter {
             } else {
               const ie = list?.[i];
               const has = !!ie || !!list || this.frame.fn === '(global)';
-              items.push(newCell(d.name, t, ie ? this.convert(this.ev(ie), t, d.line) : defaultValue(t), has));
+              items.push(newCell(d.name, t, ie ? this.convert(this.ev(ie, t), t, d.line) : this.defaultOf(t, d.line), has));
             }
           }
           return { k: 'arr', elem: level < dims.length - 1 ? { base: 'vector', elem: t } : t, items, vector: false };
@@ -463,7 +505,7 @@ class Interpreter {
           value = this.convert(this.ev(d.init, t), t, d.line);
         } else if (d.ctorArgs?.length) {
           const n = this.toInt(this.ev(d.ctorArgs[0]), d.line);
-          const fillV = d.ctorArgs[1] ? this.ev(d.ctorArgs[1]) : defaultValue(t.elem ?? { base: 'int' });
+          const fillV = d.ctorArgs[1] ? this.ev(d.ctorArgs[1], t.elem) : this.defaultOf(t.elem ?? { base: 'int' }, d.line);
           value = {
             k: 'arr',
             elem: t.elem ?? { base: 'int' },
@@ -476,10 +518,11 @@ class Interpreter {
         // string s(3, '*')  /  int x(5)
         const args = d.ctorArgs.map((a) => this.ev(a));
         if (t.base === 'string' && args.length === 2) value = { k: 'str', v: printText(args[1], defaultFmt()).repeat(Math.max(0, this.toInt(args[0], d.line))) };
+        else if (t.base === 'struct' && args.length > 1) value = this.buildStruct(t, args, d.line);
         else value = args.length ? this.convert(args[0], t, d.line) : defaultValue(t);
         phrase = `\`${d.name}\` = **${showValue(value, this.fmt)}**`;
       } else if (d.init) {
-        if (t.isRef && t.base !== 'auto') {
+        if (t.isRef && (t.base !== 'auto' || isPlace(d.init))) {
           const target = this.lv(d.init);
           this.declare(d.name, target.cell);
           this.frame.refs.set(d.name, this.text(d.init));
@@ -487,7 +530,7 @@ class Interpreter {
           continue;
         }
         const raw = this.ev(d.init, t);
-        if (t.base === 'auto') t = this.typeOf(raw);
+        if (t.base === 'auto') shownType = t = { ...this.typeOf(raw), isConst: t.isConst };
         value = this.convert(raw, t, d.line);
         if (raw.k === 'num' && value.k === 'num' && raw.t !== value.t && (value.t === 'char' || (isIntegral(value.t) && !isIntegral(raw.t)))) {
           this.evals.push({
@@ -498,7 +541,18 @@ class Interpreter {
           });
         }
         const lit = ['Num', 'Str', 'Char', 'Bool'].includes(d.init.type) || (d.init.type === 'Unary' && d.init.arg.type === 'Num');
-        phrase = lit ? `\`${d.name}\` = **${showValue(value, this.fmt)}**` : `\`${d.name}\` = \`${this.text(d.init)}\` → **${showValue(value, this.fmt)}**`;
+        phrase = d.init.type === 'Lambda'
+          ? `\`${d.name}\` = a small nameless function (a lambda) that takes ${joinWords(d.init.fn.params.map((p) => `\`${p.name}\``)) || 'nothing'}`
+          : lit ? `\`${d.name}\` = **${showValue(value, this.fmt)}**` : `\`${d.name}\` = \`${this.text(d.init)}\` → **${showValue(value, this.fmt)}**`;
+      } else if (t.base === 'struct') {
+        value = this.defaultOf(t, d.line);
+        // a local struct's numbers start as garbage (unless they have a default); a pair starts at zero
+        if (t.name !== 'pair' && this.frame.fn !== '(global)' && value.k === 'struct') {
+          value.fields.forEach((c, i) => {
+            if (isNumeric(c.type.base) && !t.fields?.[i]?.init) c.init = false;
+          });
+        }
+        phrase = `\`${d.name}\` = ${showValue(value, this.fmt)}`;
       } else {
         value = defaultValue(t);
         init = this.frame.fn === '(global)' || t.base === 'string';
@@ -512,10 +566,10 @@ class Interpreter {
       this.emit(s.line, 'loop-init', `${quietPrefix}${parts.join(', ')}.`, {}, this.lineOf(s.end - 1));
       return;
     }
-    const t = s.varType;
+    const t = shownType;
     const kindWord = t.isConst ? 'constant' : 'box';
-    const typeWord = `${typeName(t)} — ${typeMeaning(t)}`;
-    const special = (p: string) => p.startsWith('an array') || p.startsWith('a list') || p.startsWith('a nickname');
+    const typeWord = typeMeaning(t) ? `${typeName(t)} — ${typeMeaning(t)}` : typeName(t);
+    const special = (p: string) => p.startsWith('an array') || p.startsWith('a list') || p.startsWith('a nickname') || p.startsWith('names ');
     let text: string;
     if (parts.length === 1 && special(parts[0])) {
       text = `Make ${parts[0]}.`;
@@ -535,7 +589,47 @@ class Interpreter {
     if (v.k === 'num') return { base: v.t };
     if (v.k === 'str') return { base: 'string' };
     if (v.k === 'arr') return { base: 'vector', elem: v.elem };
+    if (v.k === 'struct') return { base: 'struct', name: v.name, fields: v.fields.map((c) => ({ name: c.name, type: c.type, init: null })) };
+    if (v.k === 'iter') return { base: 'iter' };
+    if (v.k === 'fn') return { base: 'func' };
     return { base: 'int' };
+  }
+
+  /** auto [a, b] = p;  — one new box per member (or nicknames with auto &[a, b]) */
+  private bindNames(names: string[], src: Expr, t: TypeSpec, line: number): string {
+    const target = this.lv(src);
+    const v = target.get();
+    if (v.k !== 'struct') throw new RuntimeError(`\`${this.text(src)}\` can't be split into [${names.join(', ')}]`, line);
+    if (v.fields.length !== names.length) throw new RuntimeError(`\`${this.text(src)}\` has ${v.fields.length} parts, but ${names.length} names were given`, line);
+    names.forEach((n, i) => {
+      const f = v.fields[i];
+      if (t.isRef) {
+        this.declare(n, f);
+        this.frame.refs.set(n, `${this.text(src)}.${f.name}`);
+      } else this.declare(n, newCell(n, { ...f.type, isConst: t.isConst }, cloneValue(f.value), f.init));
+    });
+    return `names ${joinWords(names.map((n, i) => `\`${n}\` = **${showValue(v.fields[i].value, this.fmt)}**`))} by unpacking \`${this.text(src)}\``;
+  }
+
+  /** the starting value of a box of type t (struct members use their default initializers) */
+  private defaultOf(t: TypeSpec, line: number): Value {
+    if (t.base === 'struct' && t.fields) {
+      return { k: 'struct', name: t.name ?? 'struct', fields: t.fields.map((f) => newCell(f.name, f.type, this.fieldDefault(f, line))) };
+    }
+    return defaultValue(t);
+  }
+  private fieldDefault(f: FieldDecl, line: number): Value {
+    return f.init ? this.convert(this.ev(f.init, f.type), f.type, line) : this.defaultOf(f.type, line);
+  }
+  /** Student{"Asha", 85} / pair<int,int>(3, 4) / make_pair(...) — members in order */
+  private buildStruct(t: TypeSpec, vals: Value[], line: number): Value {
+    const fields = t.fields ?? [];
+    if (vals.length > fields.length) throw new RuntimeError(`Too many values for ${typeName(t)} (it has ${fields.length} members)`, line);
+    return {
+      k: 'struct',
+      name: t.name ?? 'struct',
+      fields: fields.map((f, i) => newCell(f.name, f.type, i < vals.length ? cloneValue(this.convert(vals[i], f.type, line)) : this.fieldDefault(f, line))),
+    };
   }
 
   // ---------- expression statements (with narration) ----------
@@ -615,9 +709,29 @@ class Interpreter {
       this.emit(line, 'assign', `\`${this.text(e)}\` → \`${name}\` goes ${e.op === '++' ? 'up' : 'down'} by 1: ${before} → **${after}**.`, {}, endLine);
       return;
     }
-    if (e.type === 'Call' && this.prog.functions.has(e.callee)) {
+    if (e.type === 'Call' && (this.prog.functions.has(e.callee) || this.lookup(e.callee)?.value.k === 'fn')) {
       const v = this.ev(e);
       this.emit(line, 'expr', `Back in \`${this.frame.fn}\` — the call \`${this.text(e)}\` is finished${v.k !== 'void' ? ` (it gave back ${showValue(v, this.fmt)})` : ''}.`, {}, endLine);
+      return;
+    }
+    if (e.type === 'Call' && ['sort', 'stable_sort', 'reverse', 'fill'].includes(e.callee) && e.args.length >= 2) {
+      this.lastCmp = null;
+      this.ev(e);
+      const what = this.rangeText(e.args[0], e.args[1]);
+      let text: string;
+      if (e.callee === 'reverse') text = `Reverse ${what}: the last item becomes the first.`;
+      else if (e.callee === 'fill') text = `Fill ${what} with **${this.show(this.ev(e.args[2]))}**.`;
+      else {
+        const cmp = e.args[2];
+        const st = this.lastCmp as CmpStats | null;
+        const asked = st ? ` (it was asked ${st.count} time${st.count === 1 ? '' : 's'})` : '';
+        text = !cmp
+          ? `Sort ${what} from smallest to largest.`
+          : cmp.type === 'Functor'
+            ? `Sort ${what} using \`${this.text(cmp)}\` → from ${cmp.name === 'greater' ? 'largest to smallest' : 'smallest to largest'}.`
+            : `Sort ${what}, asking ${cmp.type === 'Lambda' ? 'the lambda' : `\`${this.text(cmp)}\``} "should a come before b?" for pairs of items${asked}.`;
+      }
+      this.emit(line, 'assign', text, {}, endLine);
       return;
     }
     if (e.type === 'Call' && e.callee === 'swap') {
@@ -641,6 +755,13 @@ class Interpreter {
     }
     const v = this.ev(e);
     this.emit(line, 'expr', `Run \`${this.text(e)}\`${v.k !== 'void' && e.type !== 'Seq' ? ` → ${showValue(v, this.fmt)}` : ''}.`, {}, endLine);
+  }
+
+  /** "`v`" for v.begin(), v.end() — otherwise "`a` … `a + n`" */
+  private rangeText(b: Expr, e: Expr): string {
+    if (b.type === 'Method' && e.type === 'Method' && b.name === 'begin' && e.name === 'end' && this.text(b.obj) === this.text(e.obj)) return `\`${this.text(b.obj)}\``;
+    if (b.type === 'Ident' && e.type === 'Binary' && e.op === '+' && e.left.type === 'Ident' && e.left.name === b.name) return `the first \`${this.text(e.right)}\` items of \`${b.name}\``;
+    return `\`${this.text(b)}\` up to \`${this.text(e)}\``;
   }
 
   /** current value of a simple variable expression (for narration only) */
@@ -724,8 +845,15 @@ class Interpreter {
       for (let i = 0; i < items.length; i++) {
         const r = this.scoped(() => {
           let t = s.varType;
-          if (t.base === 'auto') t = { ...this.typeOf(items[i]), isRef: t.isRef };
-          if (t.isRef && cells) this.declare(s.name, cells[i]);
+          if (t.base === 'auto') t = { ...this.typeOf(items[i]), isRef: t.isRef, isConst: t.isConst };
+          const item = items[i];
+          if (s.bind) {
+            if (item.k !== 'struct' || item.fields.length !== s.bind.length) throw new RuntimeError(`Each item can't be split into ${s.name}`, s.line);
+            s.bind.forEach((n, j) => {
+              const f = item.fields[j];
+              this.declare(n, t.isRef ? f : newCell(n, { ...f.type, isConst: t.isConst }, cloneValue(f.value), f.init));
+            });
+          } else if (t.isRef && cells) this.declare(s.name, cells[i]);
           else this.declare(s.name, newCell(s.name, t, cloneValue(this.convert(items[i], t, s.line))));
           state.round = i + 1;
           this.emit(s.line, 'loop', `Take item ${i + 1} of ${items.length}: \`${s.name}\` = **${showValue(items[i], this.fmt)}**.`);
@@ -822,7 +950,25 @@ class Interpreter {
   private equals(a: Value, b: Value): boolean {
     if (a.k === 'num' && b.k === 'num') return a.v === b.v;
     if (a.k === 'str' && b.k === 'str') return a.v === b.v;
+    if (a.k === 'struct' && b.k === 'struct') return a.fields.length === b.fields.length && a.fields.every((f, i) => this.equals(f.value, b.fields[i].value));
     return false;
+  }
+
+  /** -1 / 0 / 1 like a < b, used by sort and friends (pairs compare first, then second) */
+  private cmpValues(a: Value, b: Value, line: number): number {
+    const sign = (x: number | string, y: number | string) => (x < y ? -1 : x > y ? 1 : 0);
+    if (a.k === 'num' && b.k === 'num') return sign(a.v, b.v);
+    if (a.k === 'str' && b.k === 'str') return sign(a.v, b.v);
+    if (a.k === 'iter' && b.k === 'iter') return sign(a.idx, b.idx);
+    if (a.k === 'struct' && b.k === 'struct') {
+      if (a.name !== 'pair') throw new RuntimeError(`Two \`${a.name}\` values can't be compared with < — give sort a comparison function`, line);
+      for (let i = 0; i < Math.min(a.fields.length, b.fields.length); i++) {
+        const c = this.cmpValues(a.fields[i].value, b.fields[i].value, line);
+        if (c) return c;
+      }
+      return 0;
+    }
+    throw new RuntimeError("These two values can't be compared", line);
   }
 
   convert(v: Value, t: TypeSpec, line: number): Value {
@@ -842,6 +988,18 @@ class Interpreter {
         return { k: 'arr', elem, vector: true, items: v.items.map((c) => newCell(c.name, elem, cloneValue(this.convert(c.value, elem, line)), c.init)) };
       }
       throw new RuntimeError('Expected a list of values', line);
+    }
+    if (t.base === 'struct') {
+      if (v.k === 'struct' && t.fields) {
+        if (v.fields.length !== t.fields.length) throw new RuntimeError(`Can't store that in a ${typeName(t)}`, line);
+        return {
+          k: 'struct',
+          name: t.name ?? v.name,
+          fields: t.fields.map((f, i) => newCell(f.name, f.type, cloneValue(this.convert(v.fields[i].value, f.type, line)), v.fields[i].init)),
+        };
+      }
+      if (v.k === 'struct') return cloneValue(v);
+      throw new RuntimeError(`Can't store that in a ${typeName(t)}`, line);
     }
     return v;
   }
@@ -875,9 +1033,15 @@ class Interpreter {
         if (MANIPS.has(e.name)) return { k: 'manip', name: e.name };
         if (e.name in CONSTANTS) return CONSTANTS[e.name];
         if (e.name === 'npos') return num('ll', -1);
+        const fd = this.prog.functions.get(e.name);
+        if (fd) return { k: 'fn', name: e.name, decl: fd };
         throw new RuntimeError(`\`${e.name}\` is used but was never created`, e.line);
       }
       case 'InitList': {
+        if (hint?.base === 'struct' && hint.fields) {
+          const vals = e.items.map((it, i) => this.ev(it, hint.fields![i]?.type));
+          return this.buildStruct(hint, vals, e.line);
+        }
         const elem = hint?.base === 'vector' ? (hint.elem ?? { base: 'int' }) : { base: 'int' as const };
         return {
           k: 'arr',
@@ -908,6 +1072,12 @@ class Interpreter {
         return v;
       }
       case 'Unary': {
+        if (e.op === '*') {
+          const it = this.iterOf(e.arg, this.ev(e.arg));
+          const r = this.derefLV(it, e).get();
+          this.rec(e, `the item at ${this.show(it)}`, r);
+          return r;
+        }
         const a = this.ev(e.arg);
         if (a.k !== 'num') throw new RuntimeError(`\`${e.op}\` needs a number`, e.line);
         let r: Value;
@@ -955,7 +1125,37 @@ class Interpreter {
         return this.evCall(e);
       case 'Method':
         return this.evMethod(e);
+      case 'Member':
+        return this.lv(e).get();
+      case 'Functor':
+        return { k: 'fn', name: `${e.name}<>()`, builtin: e.name };
+      case 'Lambda':
+        return this.makeLambda(e);
     }
+  }
+
+  /** Evaluating a lambda expression packs its code together with what it captures. */
+  private makeLambda(e: Expr & { type: 'Lambda' }): Value {
+    const f = this.frame;
+    const visible = [...(f.captured ?? []), ...f.scopes];
+    const copy = (c: Cell, name: string) => newCell(name, { ...c.type, isConst: true }, cloneValue(c.value), c.init);
+    let captured: Map<string, Cell>[] = [];
+    if (e.capture.all === 'ref') captured = visible;
+    else if (e.capture.all === 'val') {
+      const m = new Map<string, Cell>();
+      for (const sc of visible) for (const [k, c] of sc) m.set(k, copy(c, k));
+      captured = [m];
+    }
+    if (e.capture.names.length) {
+      const m = new Map<string, Cell>();
+      for (const { name, byRef } of e.capture.names) {
+        const c = this.lookup(name);
+        if (!c) throw new RuntimeError(`The lambda captures \`${name}\`, which doesn't exist here`, e.line);
+        m.set(name, byRef ? c : copy(c, name));
+      }
+      captured = [...captured, m];
+    }
+    return { k: 'fn', name: 'lambda', decl: e.fn, captured };
   }
 
   private evAssign(e: Expr & { type: 'Assign' }): Value {
@@ -1025,7 +1225,10 @@ class Interpreter {
   private compare(op: string, a: Value, b: Value, line: number): boolean {
     let x: number | string;
     let y: number | string;
-    if (a.k === 'str' || b.k === 'str') {
+    if ((a.k === 'iter' && b.k === 'iter') || (a.k === 'struct' && b.k === 'struct')) {
+      x = this.cmpValues(a, b, line);
+      y = 0;
+    } else if (a.k === 'str' || b.k === 'str') {
       const s = (v: Value) => (v.k === 'str' ? v.v : v.k === 'num' && v.t === 'char' ? String.fromCharCode(v.v) : null);
       const sa = s(a);
       const sb = s(b);
@@ -1087,6 +1290,9 @@ class Interpreter {
     }
 
     const b = this.ev(e.right);
+    if (a.k === 'iter' || b.k === 'iter' || (a.k === 'arr' && !a.vector && b.k === 'num' && (op === '+' || op === '-'))) {
+      return this.iterArith(e, a, b);
+    }
     if (['==', '!=', '<', '<=', '>', '>='].includes(op)) {
       const r = num('bool', this.compare(op, a, b, e.line) ? 1 : 0);
       this.rec(e, `${this.show(a)} ${op} ${this.show(b)}`, r, charNote(a, b));
@@ -1101,6 +1307,31 @@ class Interpreter {
     } else note = charNote(a, b);
     this.rec(e, `${this.show(a)} ${op} ${this.show(b)}`, r, note);
     return r;
+  }
+
+  /** it + k, it - k, it - v.begin(), a + n (an array name is a position too), it == v.end() */
+  private iterArith(e: Expr & { type: 'Binary' }, av: Value, bv: Value): Value {
+    const { op } = e;
+    const a = av.k === 'num' ? av : this.iterOf(e.left, av);
+    const b = bv.k === 'num' ? bv : this.iterOf(e.right, bv);
+    let r: Value;
+    if (['==', '!=', '<', '<=', '>', '>='].includes(op) && a.k === 'iter' && b.k === 'iter') r = num('bool', this.compare(op, a, b, e.line) ? 1 : 0);
+    else if (op === '-' && a.k === 'iter' && b.k === 'iter') r = num('ll', a.idx - b.idx);
+    else if ((op === '+' || op === '-') && a.k === 'iter' && b.k === 'num') r = { ...a, idx: a.idx + (op === '+' ? b.v : -b.v) };
+    else if (op === '+' && a.k === 'num' && b.k === 'iter') r = { ...b, idx: b.idx + a.v };
+    else throw new RuntimeError(`\`${op}\` can't be used on positions in a list here`, e.line);
+    this.rec(e, `${this.show(a)} ${op} ${this.show(b)}`, r, op === '-' && r.k === 'num' ? 'how many steps apart the two positions are' : undefined);
+    return r;
+  }
+
+  /** Turn an iterator value — or an array / string used as one — into an iterator. */
+  private iterOf(e: Expr, v: Value): IterValue {
+    if (v.k === 'iter') return v;
+    if (v.k === 'arr' || v.k === 'str') return { k: 'iter', ref: this.iterRef(this.lv(e)), idx: 0 };
+    throw new RuntimeError(`\`${this.text(e)}\` is not a position in a list (like \`v.begin()\`)`, e.line);
+  }
+  private iterRef(base: LValue): IterRef {
+    return { get: () => base.get(), set: (v) => base.set(v), owner: base.owner ?? base.cell, path: base.path };
   }
 
   private output(e: Expr) {
@@ -1219,24 +1450,7 @@ class Interpreter {
             e.line,
           );
         }
-        const cell = container.items[idx];
-        return {
-          get: () => {
-            this.access.push({ owner: owner.id, path, mode: 'r' });
-            return cell.value;
-          },
-          set: (v) => {
-            cell.value = v;
-            cell.init = true;
-            this.changed.add(cell.id);
-            this.changed.add(owner.id);
-            this.access.push({ owner: owner.id, path, mode: 'w' });
-          },
-          type: { ...cell.type, isConst: base.type.isConst },
-          cell,
-          owner,
-          path,
-        };
+        return this.elemLV(container.items[idx], owner, path, !!base.type.isConst);
       }
       if (container.k === 'str') {
         if (idx < 0 || idx > container.v.length) {
@@ -1262,6 +1476,33 @@ class Interpreter {
       }
       throw new RuntimeError(`\`${this.text(e.obj)}\` can't be indexed with [ ]`, e.line);
     }
+    if (e.type === 'Member') {
+      const base = this.lv(e.obj);
+      const sv = base.get();
+      if (sv.k !== 'struct') throw new RuntimeError(`\`${this.text(e.obj)}\` has no member \`.${e.name}\``, e.line);
+      const cell = sv.fields.find((f) => f.name === e.name);
+      if (!cell) throw new RuntimeError(`\`${this.text(e.obj)}\` (a ${sv.name}) has no member called \`${e.name}\``, e.line);
+      const owner = base.owner ?? base.cell;
+      return {
+        get: () => {
+          if (base.path.length) this.access.push({ owner: owner.id, path: base.path, mode: 'r' });
+          return cell.value;
+        },
+        set: (v) => {
+          cell.value = v;
+          cell.init = true;
+          this.changed.add(cell.id);
+          this.changed.add(base.cell.id);
+          this.changed.add(owner.id);
+          if (base.path.length) this.access.push({ owner: owner.id, path: base.path, mode: 'w' });
+        },
+        type: { ...cell.type, isConst: base.type.isConst || cell.type.isConst },
+        cell,
+        owner: cell.value.k === 'arr' || cell.value.k === 'str' ? owner : base.owner,
+        path: base.path,
+      };
+    }
+    if (e.type === 'Unary' && e.op === '*') return this.derefLV(this.iterOf(e.arg, this.ev(e.arg)), e);
     if (e.type === 'Method' && (e.name === 'at' || e.name === 'back' || e.name === 'front')) {
       const base = this.lv(e.obj);
       const c = base.get();
@@ -1277,15 +1518,54 @@ class Interpreter {
     return { get: () => cell.value, set: (nv) => (cell.value = nv), type: cell.type, cell, owner: null, path: [] };
   }
 
+  /** one element box of an array / vector */
+  private elemLV(cell: Cell, owner: Cell, path: number[], isConst: boolean): LValue {
+    return {
+      get: () => {
+        this.access.push({ owner: owner.id, path, mode: 'r' });
+        return cell.value;
+      },
+      set: (v) => {
+        cell.value = v;
+        cell.init = true;
+        this.changed.add(cell.id);
+        this.changed.add(owner.id);
+        this.access.push({ owner: owner.id, path, mode: 'w' });
+      },
+      type: { ...cell.type, isConst: isConst || cell.type.isConst },
+      cell,
+      owner,
+      path,
+    };
+  }
+
+  /** *it — the box an iterator points at */
+  private derefLV(it: IterValue, e: Expr): LValue {
+    const cont = it.ref.get();
+    const len = cont.k === 'arr' ? cont.items.length : cont.k === 'str' ? cont.v.length : 0;
+    if (it.idx < 0 || it.idx >= len) throw new RuntimeError(`\`${this.text(e)}\` looks at position ${it.idx}, but there is no item there (the list has ${len})`, e.line);
+    const path = [...it.ref.path, it.idx];
+    if (cont.k === 'arr') return this.elemLV(cont.items[it.idx], it.ref.owner, path, false);
+    const ch = num('char', (cont as Value & { k: 'str' }).v.charCodeAt(it.idx));
+    const cell = newCell('(temp)', { base: 'char' }, ch);
+    return { get: () => ch, set: () => {}, type: { base: 'char', isConst: true }, cell, owner: null, path: [] };
+  }
+
   // ---------- calls ----------
   private evCall(e: Expr & { type: 'Call' }): Value {
+    // a variable holding a lambda (auto cmp = [](...) {...}; cmp(a, b))
+    const local = this.lookup(e.callee);
+    if (local && local.value.k === 'fn') {
+      const f = local.value;
+      if (f.builtin) return this.invoke(f, e.args.map((a) => this.ev(a)), e.line);
+      return this.callUser(f.decl!, e, f.captured, e.callee);
+    }
     const fn = this.prog.functions.get(e.callee);
     if (fn) return this.callUser(fn, e);
     return this.callBuiltin(e);
   }
 
-  private callUser(fn: FuncDecl, e: Expr & { type: 'Call' }): Value {
-    if (this.frames.length > 200) throw new RuntimeError('Too many function calls inside each other (stack overflow) — is a recursive function missing its stopping case?', e.line);
+  private callUser(fn: FuncDecl, e: Expr & { type: 'Call' }, captured?: Map<string, Cell>[], name = fn.name): Value {
     const required = fn.params.filter((p) => !p.def).length;
     if (e.args.length < required || e.args.length > fn.params.length)
       throw new RuntimeError(`\`${fn.name}\` needs ${required === fn.params.length ? required : `${required} to ${fn.params.length}`} value(s) but got ${e.args.length}`, e.line);
@@ -1293,7 +1573,7 @@ class Interpreter {
     fn.params.forEach((p, i) => {
       const a = e.args[i] ?? p.def!;
       if (!e.args[i]) {
-        const v = this.convert(this.ev(a), p.type, e.line);
+        const v = this.convert(this.ev(a, p.type), p.type, e.line);
         bound.push({ name: p.name, cell: newCell(p.name, p.type, cloneValue(v)), isDefault: true });
         return;
       }
@@ -1301,37 +1581,61 @@ class Interpreter {
         const target = this.lv(a);
         bound.push({ name: p.name, cell: target.cell, ref: this.text(a) });
       } else {
-        const v = this.convert(this.ev(a), p.type, e.line);
-        bound.push({ name: p.name, cell: newCell(p.name, p.type, cloneValue(v)) });
+        const raw = this.ev(a, p.type);
+        const v = this.convert(raw, p.type, e.line);
+        bound.push({ name: p.name, cell: newCell(p.name, p.type.base === 'auto' ? this.typeOf(raw) : p.type, cloneValue(v)) });
       }
     });
+    const result = this.enter(fn, bound, this.text(e), e.line, captured, name);
+    if (result.k !== 'void') this.rec(e, `${name}(…)`, result, 'the value returned by the function');
+    return result;
+  }
+
+  /** Call a function value with already-computed arguments (a comparator inside sort, for example). */
+  private invoke(f: FnValue, args: Value[], line: number): Value {
+    if (f.builtin) {
+      const c = this.cmpValues(args[0], args[1], line);
+      return num('bool', (f.builtin === 'greater' ? c > 0 : c < 0) ? 1 : 0);
+    }
+    const fn = f.decl!;
+    if (args.length !== fn.params.length) throw new RuntimeError(`\`${f.name}\` needs ${fn.params.length} value(s) but got ${args.length}`, line);
+    const bound = fn.params.map((p, i) => {
+      const t = p.type.base === 'auto' ? { ...this.typeOf(args[i]), isConst: p.type.isConst } : p.type;
+      const v = this.convert(args[i], t, line);
+      return { name: p.name, cell: newCell(p.name, t, p.type.isRef ? v : cloneValue(v)) };
+    });
+    return this.enter(fn, bound, `${f.name}(${args.map((a) => this.show(a)).join(', ')})`, line, f.captured, f.name);
+  }
+
+  /** Run a function body in a new frame. */
+  private enter(fn: FuncDecl, bound: { name: string; cell: Cell; ref?: string; isDefault?: boolean }[], callText: string, line: number, captured: Map<string, Cell>[] | undefined, name: string): Value {
+    if (this.frames.length > 200) throw new RuntimeError('Too many function calls inside each other (stack overflow) — is a recursive function missing its stopping case?', line);
     // keep the caller's half-finished narration safe while the function runs
     const saved = { evals: this.evals, changed: this.changed, access: this.access, printed: this.printed, typed: this.typed };
-    const label = `${fn.name}(${bound.map((b) => `${b.name} = ${b.ref && b.cell.value.k === 'arr' ? b.ref : showValue(b.cell.value, this.fmt)}`).join(', ')})`;
+    const label = `${name}(${bound.map((b) => `${b.name} = ${b.ref && b.cell.value.k === 'arr' ? b.ref : showValue(b.cell.value, this.fmt)}`).join(', ')})`;
     const savedLoops = this.loops;
     const savedBreak = this.breakables;
     this.loops = [];
     this.breakables = [];
     this.resetCollectors();
-    this.pushFrame(fn.name, label);
+    this.pushFrame(name, label, fn, captured);
     for (const b of bound) {
       this.declare(b.name, b.cell);
       if (b.ref) this.frame.refs.set(b.name, b.ref);
     }
     let result: Value = VOID;
     try {
-      this.emit(fn.line, 'call', `Call \`${this.text(e)}\` → jump into \`${fn.name}\` with ${bound.length ? bound.map((b) => `\`${b.name}\` = ${b.ref ? `\`${b.ref}\` (shared, not copied)` : `**${showValue(b.cell.value, this.fmt)}**`}${b.isDefault ? ' (default value, nothing was passed)' : ''}`).join(', ') : 'nothing'}.`);
+      this.emit(fn.line, 'call', `Call \`${callText}\` → jump into \`${name}\` with ${bound.length ? bound.map((b) => `\`${b.name}\` = ${b.ref ? `\`${b.ref}\` (shared, not copied)` : `**${showValue(b.cell.value, this.fmt)}**`}${b.isDefault ? ' (default value, nothing was passed)' : ''}`).join(', ') : 'nothing'}.`);
       const sig = this.execBlockBody(fn.body.body);
       if (sig?.s === 'return') result = sig.value;
-      else if (fn.ret.base !== 'void') throw new RuntimeError(`\`${fn.name}\` finished without returning a value`, this.lineOf(fn.body.end - 1));
-      else this.emit(this.lineOf(fn.body.end - 1), 'return', `Reached the end of \`${fn.name}\` → go back to the caller.`);
+      else if (fn.ret.base !== 'void' && fn.ret.base !== 'auto') throw new RuntimeError(`\`${name}\` finished without returning a value`, this.lineOf(fn.body.end - 1));
+      else this.emit(this.lineOf(fn.body.end - 1), 'return', `Reached the end of \`${name}\` → go back to the caller.`);
     } finally {
       this.frames.pop();
       this.loops = savedLoops;
       this.breakables = savedBreak;
     }
     Object.assign(this, saved);
-    if (result.k !== 'void') this.rec(e, `${fn.name}(…)`, result, 'the value returned by the function');
     return result;
   }
 
@@ -1381,7 +1685,84 @@ class Interpreter {
           const t = promote(a.t, b.t);
           const pick = name === 'max' ? (a.v >= b.v ? a : b) : a.v <= b.v ? a : b;
           r = a.t === b.t ? pick : num(t, (pick as Value & { k: 'num' }).v);
-        } else r = a;
+        } else {
+          const c = this.cmpValues(a, b, e.line);
+          r = name === 'max' ? (c < 0 ? b : a) : c > 0 ? b : a;
+        }
+        break;
+      }
+      case 'make_pair': {
+        const [a, b] = args();
+        r = { k: 'struct', name: 'pair', fields: [newCell('first', this.typeOf(a), cloneValue(a)), newCell('second', this.typeOf(b), cloneValue(b))] };
+        break;
+      }
+      case 'sort':
+      case 'stable_sort': {
+        const rg = this.range(e);
+        const less = this.lessFn(e.args[2], e.line);
+        this.writeRange(rg, mergeSort(this.rangeValues(rg), less));
+        return VOID;
+      }
+      case 'reverse': {
+        const rg = this.range(e);
+        this.writeRange(rg, this.rangeValues(rg).reverse());
+        return VOID;
+      }
+      case 'fill': {
+        const rg = this.range(e);
+        const x = this.ev(e.args[2]);
+        this.writeRange(rg, this.rangeValues(rg).map((old) => this.convert(x, this.typeOf(old), e.line)));
+        return VOID;
+      }
+      case 'count':
+      case 'find': {
+        const rg = this.range(e);
+        const x = this.ev(e.args[2]);
+        const vals = this.rangeValues(rg);
+        if (name === 'count') r = num('ll', vals.filter((v) => this.equals(v, x)).length);
+        else {
+          const at = vals.findIndex((v) => this.equals(v, x));
+          r = { k: 'iter', ref: rg.ref, idx: at === -1 ? rg.e : rg.b + at };
+        }
+        break;
+      }
+      case 'accumulate': {
+        const rg = this.range(e);
+        const init = this.ev(e.args[2]);
+        const t = this.typeOf(init);
+        r = this.rangeValues(rg).reduce((sum, v) => this.convert(this.arith('+', sum, v, e.line), t, e.line), init);
+        break;
+      }
+      case 'max_element':
+      case 'min_element': {
+        const rg = this.range(e);
+        const less = this.lessFn(e.args[2], e.line);
+        const vals = this.rangeValues(rg);
+        let best = 0;
+        for (let i = 1; i < vals.length; i++) {
+          if (name === 'max_element' ? less(vals[best], vals[i]) : less(vals[i], vals[best])) best = i;
+        }
+        r = { k: 'iter', ref: rg.ref, idx: rg.b + (vals.length ? best : 0) };
+        break;
+      }
+      case 'lower_bound':
+      case 'upper_bound':
+      case 'binary_search': {
+        const rg = this.range(e);
+        const x = this.ev(e.args[2]);
+        const less = this.lessFn(e.args[3], e.line);
+        const vals = this.rangeValues(rg);
+        // first position where the item is not "before" x (lower) / where x is before the item (upper)
+        let lo = 0;
+        let hi = vals.length;
+        while (lo < hi) {
+          const mid = (lo + hi) >> 1;
+          const goRight = name === 'upper_bound' ? !less(x, vals[mid]) : less(vals[mid], x);
+          if (goRight) lo = mid + 1;
+          else hi = mid;
+        }
+        if (name === 'binary_search') r = num('bool', lo < vals.length && !less(x, vals[lo]) ? 1 : 0);
+        else r = { k: 'iter', ref: rg.ref, idx: rg.b + lo };
         break;
       }
       case 'swap': {
@@ -1452,6 +1833,71 @@ class Interpreter {
     return r;
   }
 
+  // ---------- algorithms (sort, find, lower_bound, ...) ----------
+  /** the [first, last) range given by the first two arguments */
+  private range(e: Expr & { type: 'Call' }): Range {
+    if (e.args.length < 2) throw new RuntimeError(`\`${e.callee}\` needs a start and an end position, like ${e.callee}(v.begin(), v.end())`, e.line);
+    const b = this.iterOf(e.args[0], this.ev(e.args[0]));
+    const en = this.iterOf(e.args[1], this.ev(e.args[1]));
+    const cont = b.ref.get();
+    const len = cont.k === 'arr' ? cont.items.length : cont.k === 'str' ? cont.v.length : 0;
+    if (en.ref.get() !== cont) throw new RuntimeError(`The start and end given to \`${e.callee}\` belong to different lists`, e.line);
+    if (b.idx < 0 || en.idx > len || b.idx > en.idx) throw new RuntimeError(`\`${e.callee}\` was given positions ${b.idx} to ${en.idx}, but the list only has ${len} items`, e.line);
+    return { ref: b.ref, b: b.idx, e: en.idx };
+  }
+  private rangeValues(rg: Range): Value[] {
+    const cont = rg.ref.get();
+    const owner = rg.ref.owner.id;
+    for (let i = rg.b; i < rg.e && this.access.length < 24; i++) this.access.push({ owner, path: [...rg.ref.path, i], mode: 'r' });
+    if (cont.k === 'arr') return cont.items.slice(rg.b, rg.e).map((c) => c.value);
+    if (cont.k === 'str') return [...cont.v.slice(rg.b, rg.e)].map((ch) => num('char', ch.charCodeAt(0)));
+    return [];
+  }
+  /** store values back into the range (only boxes whose value moved light up) */
+  private writeRange(rg: Range, vals: Value[]) {
+    const cont = rg.ref.get();
+    if (cont.k === 'str') {
+      const mid = vals.map((v) => String.fromCharCode(v.k === 'num' ? v.v & 0xff : 0)).join('');
+      rg.ref.set({ k: 'str', v: cont.v.slice(0, rg.b) + mid + cont.v.slice(rg.e) });
+      return;
+    }
+    if (cont.k !== 'arr') return;
+    vals.forEach((v, i) => {
+      const cell = cont.items[rg.b + i];
+      if (cell.value === v) return;
+      cell.value = v;
+      cell.init = true;
+      this.changed.add(cell.id);
+      this.access.push({ owner: rg.ref.owner.id, path: [...rg.ref.path, rg.b + i], mode: 'w' });
+    });
+    this.changed.add(rg.ref.owner.id);
+  }
+  /** "should a come before b?" — the default `<`, greater<>(), a lambda or a named function */
+  private lessFn(cmpE: Expr | undefined, line: number): (a: Value, b: Value) => boolean {
+    if (!cmpE) return (a, b) => this.cmpValues(a, b, line) < 0;
+    const f = this.ev(cmpE);
+    if (f.k !== 'fn') throw new RuntimeError(`\`${this.text(cmpE)}\` is not a comparison function`, line);
+    const stats: CmpStats = { name: f.name, count: 0 };
+    this.lastCmp = stats;
+    const label = cmpE.type === 'Ident' ? cmpE.name : f.name;
+    return (a, b) => {
+      this.quiet++;
+      let r: Value;
+      try {
+        r = this.invoke(f, [a, b], line);
+      } finally {
+        this.quiet--;
+      }
+      const yes = this.truthy(r);
+      stats.count++;
+      if (stats.count <= 6 && !f.builtin) {
+        const call = `${label}(${this.show(a)}, ${this.show(b)})`;
+        this.evals.push({ expr: call, calc: call, result: yes ? 'true' : 'false', note: `${this.show(a)} ${yes ? 'goes' : 'does not go'} before ${this.show(b)}` });
+      }
+      return yes;
+    };
+  }
+
   private evMethod(e: Expr & { type: 'Method' }): Value {
     const base = this.lv(e.obj);
     const v = base.get();
@@ -1499,6 +1945,9 @@ class Interpreter {
         case 'back':
         case 'front':
           return this.lv(e).get();
+        case 'begin':
+        case 'end':
+          return { k: 'iter', ref: this.iterRef(base), idx: name === 'begin' ? 0 : s.length };
         default:
           throw new RuntimeError(`The visualizer doesn't know \`.${name}()\` for text yet`, e.line);
       }
@@ -1514,8 +1963,13 @@ class Interpreter {
         }
         case 'empty':
           return num('bool', v.items.length === 0 ? 1 : 0);
-        case 'push_back': {
-          const a = this.convert(arg(0), v.elem, e.line);
+        case 'begin':
+      case 'end':
+        return { k: 'iter', ref: this.iterRef(base), idx: name === 'begin' ? 0 : v.items.length };
+      case 'emplace_back':
+      case 'push_back': {
+          const raw = name === 'emplace_back' && v.elem.base === 'struct' && e.args.length !== 1 ? this.buildStruct(v.elem, e.args.map((a, i) => this.ev(a, v.elem.fields?.[i]?.type)), e.line) : this.ev(e.args[0], v.elem);
+          const a = this.convert(raw, v.elem, e.line);
           this.lastPushed = a;
           v.items.push(newCell('', v.elem, cloneValue(a)));
           this.changed.add(base.cell.id);
@@ -1544,6 +1998,26 @@ class Interpreter {
 }
 
 // ============ small utilities ============
+/** an expression that names an existing box (so a reference can point at it) */
+function isPlace(e: Expr): boolean {
+  if (e.type === 'Ident' || e.type === 'Index' || e.type === 'Member') return true;
+  if (e.type === 'Unary') return e.op === '*';
+  return e.type === 'Method' && ['at', 'back', 'front'].includes(e.name);
+}
+
+/** Stable merge sort: equal items keep their order. */
+function mergeSort(vals: Value[], less: (a: Value, b: Value) => boolean): Value[] {
+  if (vals.length <= 1) return vals;
+  const mid = vals.length >> 1;
+  const left = mergeSort(vals.slice(0, mid), less);
+  const right = mergeSort(vals.slice(mid), less);
+  const out: Value[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < left.length && j < right.length) out.push(less(right[j], left[i]) ? right[j++] : left[i++]);
+  return out.concat(left.slice(i), right.slice(j));
+}
+
 function leftmost(e: Expr): Expr | null {
   let cur: Expr = e;
   while (cur.type === 'Binary' && (cur.op === '<<' || cur.op === '>>')) cur = cur.left;
@@ -1625,6 +2099,12 @@ function collectPointers(p: Program): Record<string, string[]> {
       case 'Method':
         visitE(e.obj);
         e.args.forEach(visitE);
+        return;
+      case 'Member':
+        visitE(e.obj);
+        return;
+      case 'Lambda':
+        visitS(e.fn.body);
         return;
       case 'Cast':
         visitE(e.arg);

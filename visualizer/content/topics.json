@@ -43,5 +43,20 @@
     "title": "Recursion",
     "tagline": "A function that solves a problem by calling a smaller copy of itself.",
     "blurb": "You learn how a function can call itself, why every recursive function needs a base case, and how the call stack piles up and unwinds. You use it for factorial, fast power, Fibonacci, subsequences, binary search and the Tower of Hanoi, and learn to read a recursion tree to count how much work a recursive program does."
+  },
+  "10_Arrays": {
+    "title": "Arrays",
+    "tagline": "One name for a whole row of values.",
+    "blurb": "You learn to keep many values in a single vector and reach any of them by its position, starting from 0. You read values into it, print it forwards, backwards and in steps, and walk through it to find the sum, the average, the biggest and smallest values, and how many elements pass a test."
+  },
+  "11_Sorting": {
+    "title": "Sorting",
+    "tagline": "Put things in order, one compare and swap at a time.",
+    "blurb": "You learn three classic ways to sort by hand (bubble, selection and insertion sort), count how many comparisons and swaps they make, and see why some keep equal items in their original order. Then you let std::sort do the work, telling it exactly how to order numbers, words, pairs and structs with your own comparator."
+  },
+  "12_Searching": {
+    "title": "Searching",
+    "tagline": "Find it by checking everything, or by halving the search each time.",
+    "blurb": "You learn linear search, which checks one element after another and works on any array, and use it to count matches and find the first and last position. Then you learn binary search on sorted arrays, which throws away half of what is left at every step, and use it to find insert positions, first and last occurrences and the ceil of a number."
   }
 }
